@@ -1,0 +1,88 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f8f8;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Contact Form Container */
+.container {
+    width: 40%;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+    margin: auto;
+    margin-top: 50px;
+}
+
+h2 {
+    color: #5A002B; /* Maroon */
+    text-align: center;
+}
+
+label {
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+}
+
+.note {
+    color:  #5A002B; /* Maroon */
+    font-size: 12px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #5A002B; /* Maroon */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    margin-top: 15px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+}
+
+button:hover {
+    background-color:  #5A002B; /* Maroon */
+}
+
+/* Footer (Sticky) */
+footer {
+    background: #5A002B; /* Maroon */
+    color: white;
+    text-align: center;
+    padding: 15px;
+    margin-top: auto;
+    width: 100%;
+    bottom: 0;
+}
+
+footer a {
+    color: #AD974F; /* Gold */
+    text-decoration: none;
+    font-weight: bold;
+}
+
+footer a:hover {
+    color: #FFFFFF;
+    text-decoration: underline;
+}

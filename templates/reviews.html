@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ZULens - Reviews</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand" href="homepage.html">
+      <img src="../static/ZULens-logo.png" alt="ZULens Logo" class="logo">
+    </a>
+    
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item"><a class="nav-link" href="homepage.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="about us.html">About Us</a></li>
+        <li class="nav-item"><a class="nav-link" href="reviews.html">Reviews</a></li>
+        <li class="nav-item"><a class="nav-link" href="submit_review.html">Submit a Review</a></li>
+        <li class="nav-item"><a class="nav-link" href="contact us.html">Contact Us</a></li>
+        <li class="nav-item">
+          <a class="nav-link btn btn-primary" href="login.html">Login</a>
+        </li>
+      </ul>
+    </div>
+</nav>
+
+  <!-- Filters -->
+  <div class="container mt-4">
+    <h2 class="text-center">All Reviews</h2>
+    <div class="row mb-4 justify-content-center">
+      <div class="col-md-3">
+        <input type="text" id="searchInput" placeholder="Search instructor/course..." class="form-control" />
+      </div>
+      <div class="col-md-3">
+        <select id="courseFilter" class="form-select">
+          <option value="">All Courses</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select id="sentimentFilter" class="form-select">
+          <option value="">All Sentiments</option>
+          <option value="Positive">Positive</option>
+          <option value="Neutral">Neutral</option>
+          <option value="Negative">Negative</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="grouped-reviews"></div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center p-3 mt-4" style="background-color: #5A002B; color: white;">
+    <p>© 2025 ZULens - AI-Powered Reviews for Zayed University</p>
+  </footer>
+
+  <!-- Script -->
+  <script>
+    let allReviews = [];
+
+    async function fetchReviews() {
+      const res = await fetch("http://127.0.0.1:5000/get-reviews");
+      const data = await res.json();
+      allReviews = data;
+      populateCourseFilter();
+      renderGroupedReviews();
+    }
+
+    function populateCourseFilter() {
+      const courseSet = new Set(allReviews.map(r => r.course));
+      const courseFilter = document.getElementById("courseFilter");
+      courseSet.forEach(course => {
+        const option = document.createElement("option");
+        option.value = course;
+        option.textContent = course;
+        courseFilter.appendChild(option);
+      });
+    }
+
+    function renderGroupedReviews() {
+      const container = document.getElementById("grouped-reviews");
+      const search = document.getElementById("searchInput").value.toLowerCase();
+      const selectedCourse = document.getElementById("courseFilter").value;
+      const selectedSentiment = document.getElementById("sentimentFilter").value;
+
+      // Group reviews
+      const courseGroups = {};
+
+      allReviews.forEach(r => {
+        const matchesSearch = r.instructor.toLowerCase().includes(search) || r.course.toLowerCase().includes(search);
+        const matchesCourse = !selectedCourse || r.course === selectedCourse;
+        const matchesSentiment = !selectedSentiment || r.sentiment === selectedSentiment;
+
+        if (matchesSearch && matchesCourse && matchesSentiment) {
+          if (!courseGroups[r.course]) {
+            courseGroups[r.course] = {};
+          }
+          if (!courseGroups[r.course][r.instructor]) {
+            courseGroups[r.course][r.instructor] = [];
+          }
+          courseGroups[r.course][r.instructor].push(r);
+        }
+      });
+
+      container.innerHTML = "";
+
+      const courseKeys = Object.keys(courseGroups);
+      if (courseKeys.length === 0) {
+        container.innerHTML = "<p class='text-center'>No matching reviews found.</p>";
+        return;
+      }
+
+      courseKeys.forEach(course => {
+        container.innerHTML += `<h3 class="mt-4">${course}</h3>`;
+
+        const instructors = courseGroups[course];
+        Object.keys(instructors).forEach(instructor => {
+          container.innerHTML += `<h5 class="text-primary mt-3">${instructor}</h5>`;
+
+          instructors[instructor].forEach(r => {
+            container.innerHTML += `
+              <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                  <span class="badge bg-${r.sentiment === 'Positive' ? 'success' : r.sentiment === 'Negative' ? 'danger' : 'secondary'}">${r.sentiment}</span>
+                  ${r.flagged ? '<span class="badge bg-danger ms-2">🚩 Flagged</span>' : ''}
+                  <p class="mt-2"><strong>Rating:</strong> ${r.rating} / 5</p>
+                  <p><strong>AI Summary:</strong> ${r.summary}</p>
+                  <hr />
+                  <p>"${r.review}"</p>
+                </div>
+              </div>
+            `;
+          });
+        });
+      });
+    }
+
+    document.getElementById("searchInput").addEventListener("input", renderGroupedReviews);
+    document.getElementById("courseFilter").addEventListener("change", renderGroupedReviews);
+    document.getElementById("sentimentFilter").addEventListener("change", renderGroupedReviews);
+
+    window.onload = fetchReviews;
+  </script>
+</body>
+</html>
