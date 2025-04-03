@@ -31,6 +31,11 @@ def reviews():
 def submit_review_page():
     return render_template('submit_review.html')
 
+@app.route("/admin")
+def admin_panel():
+    return render_template("admin_panel.html")
+
+
 # ----------------- Review Routes -----------------
 
 @app.route('/submit-review', methods=['POST'])

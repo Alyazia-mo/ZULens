@@ -55,7 +55,7 @@
 
   <script>
     async function loadReviews() {
-      const res = await fetch("http://127.0.0.1:5000/get-reviews");
+      const res = await fetch("/get-reviews");
       const reviews = await res.json();
       const container = document.getElementById("review-list");
       container.innerHTML = "";
@@ -88,7 +88,7 @@
       const confirmed = confirm("Are you sure you want to delete this review?");
       if (!confirmed) return;
 
-      const res = await fetch("http://127.0.0.1:5000/delete-review-by-index", {
+      const res = await fetch("/delete-review-by-index", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ index })
