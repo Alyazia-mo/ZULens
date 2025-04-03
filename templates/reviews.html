@@ -68,7 +68,7 @@
     let allReviews = [];
 
     async function fetchReviews() {
-      const res = await fetch("http://127.0.0.1:5000/get-reviews");
+      const res = await fetch("/get-reviews");
       const data = await res.json();
       allReviews = data;
       populateCourseFilter();
