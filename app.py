@@ -15,9 +15,26 @@ sia = SentimentIntensityAnalyzer()
 
 from flask import render_template
 
-@app.route('/')
-def homepage():
-    return render_template('homepage.html')
+@app.route("/homepage")
+def homepage_redirect():
+    return render_template("homepage.html")
+
+@app.route("/about-us")
+def about_us():
+    return render_template("about-us.html")
+
+@app.route("/reviews")
+def reviews():
+    return render_template("reviews.html")
+
+@app.route("/submit_review")
+def submit_review_page():
+    return render_template("submit_review.html")
+
+@app.route("/contact-us")
+def contact_us():
+    return render_template("contact-us.html")
+
 
 # Initialize database if not exists
 def init_db():
@@ -188,6 +205,10 @@ def delete_review_by_index():
     conn.close()
 
     return jsonify({"message": "Review deleted"}), 200
+
+from flask import Flask, render_template
+
+app = Flask(__name__)
 
 
 import os
