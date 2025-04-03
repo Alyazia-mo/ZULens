@@ -15,7 +15,7 @@ sia = SentimentIntensityAnalyzer()
 
 from flask import render_template
 
-@app.route("/homepage")
+@app.route("/")
 def homepage_redirect():
     return render_template("homepage.html")
 
