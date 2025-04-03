@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const reviewInput = document.getElementById("review");
   const warningBox = document.getElementById("warning-box");
 
-  // 🧠 Unfriendly words + suggested alternatives
   const flaggedWords = {
     "stupid": "not helpful",
     "idiot": "unprofessional",
@@ -33,30 +32,26 @@ document.addEventListener("DOMContentLoaded", function () {
     "i hate this class"
   ];
 
-  // 🔍 Live review content scanning
   if (reviewInput) {
     reviewInput.addEventListener("input", () => {
       const reviewText = reviewInput.value.toLowerCase();
       let message = "";
       let hasFlaggedWords = false;
-  
-      // Check for single words
+
       Object.keys(flaggedWords).forEach(word => {
         if (reviewText.includes(word)) {
           hasFlaggedWords = true;
           message += `⚠️ Consider replacing "<strong>${word}</strong>" with "<strong>${flaggedWords[word]}</strong>"<br>`;
         }
       });
-  
-      // Check for full phrases
+
       flaggedPhrases.forEach(phrase => {
         if (reviewText.includes(phrase)) {
           hasFlaggedWords = true;
           message += `⚠️ Please avoid the phrase "<strong>${phrase}</strong>"<br>`;
         }
       });
-  
-      // Show/hide warning + control submission
+
       const submitButton = form.querySelector("button[type='submit']");
       if (message) {
         warningBox.innerHTML = message;
@@ -72,10 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
-  
-     
 
-  // ✅ Handle form submit
   if (form) {
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
@@ -85,13 +77,11 @@ document.addEventListener("DOMContentLoaded", function () {
       const rating = parseInt(document.getElementById("rating").value.trim());
       const review = reviewInput.value.trim();
 
-      // ✅ Word Count Validation
-    const wordCount = review.split(/\s+/).filter(word => word.length > 0).length;
+      const wordCount = review.split(/\s+/).filter(word => word.length > 0).length;
       if (wordCount < 5) {
         alert("⚠️ Please write at least 5 words in your review.");
-         return;
-        }
-
+        return;
+      }
 
       if (!instructor || !course || !rating || !review) {
         alert("Please fill in all required fields.");
@@ -101,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const reviewData = { instructor, course, rating, review };
 
       try {
-        const response = await fetch("http://127.0.0.1:5000/submit-review", {
+        const response = await fetch("/submit-review", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(reviewData),
@@ -123,7 +113,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // 💬 Chatbot toggle
   const chatbotToggle = document.getElementById("chatbot-toggle");
   const chatbotModal = document.getElementById("chatbot-modal");
   const closeChatbot = document.getElementById("close-chatbot");
@@ -139,7 +128,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Chatbot interaction
   if (chatInput) {
     chatInput.addEventListener("keypress", async (e) => {
       if (e.key === "Enter") {
@@ -150,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
         log.innerHTML += `<p><strong>You:</strong> ${input}</p>`;
         e.target.value = "";
 
-        const res = await fetch("http://127.0.0.1:5000/chat", {
+        const res = await fetch("/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message: input })
