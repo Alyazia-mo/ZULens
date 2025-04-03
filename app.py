@@ -1,6 +1,6 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-import sqlite3
+import sqlite3, os
 import nltk
 from nltk.sentiment import SentimentIntensityAnalyzer
 
@@ -9,13 +9,7 @@ nltk.download("vader_lexicon")
 app = Flask(__name__, template_folder="templates", static_folder="static")
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
-
 sia = SentimentIntensityAnalyzer()
-
-
-from flask import Flask, render_template
-
-app = Flask(__name__, template_folder='templates', static_folder='static')
 
 @app.route('/')
 def homepage():
@@ -37,28 +31,8 @@ def reviews():
 def submit_review_page():
     return render_template('submit_review.html')
 
-# Initialize database if not exists
-def init_db():
-    conn = sqlite3.connect("reviews.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS reviews (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            course TEXT,
-            instructor TEXT,
-            rating INTEGER,
-            review TEXT,
-            sentiment TEXT,
-            summary TEXT,
-            flagged INTEGER DEFAULT 0
-        )
-    """)
-    conn.commit()
-    conn.close()
+# ----------------- Review Routes -----------------
 
-init_db()
-
-# Route to submit review
 @app.route('/submit-review', methods=['POST'])
 def submit_review():
     data = request.json
@@ -70,19 +44,10 @@ def submit_review():
     if not course or not instructor or not review:
         return jsonify({"error": "Missing fields"}), 400
 
-    # Sentiment
     sentiment_score = sia.polarity_scores(review)
     compound = sentiment_score["compound"]
     sentiment = "Neutral"
-    if compound >= 0.05:
-        sentiment = "Positive"
-    elif compound <= -0.05:
-        sentiment = "Negative"
 
-        # Sentiment Analysis
-    sentiment_score = sia.polarity_scores(review)
-    compound = sentiment_score["compound"]
-    # Smart adjustment using rating
     if rating >= 4 and compound < 0.05:
         sentiment = "Positive"
     elif rating <= 2 and compound > -0.05:
@@ -91,13 +56,8 @@ def submit_review():
         sentiment = "Positive"
     elif compound <= -0.05:
         sentiment = "Negative"
-    else:
-        sentiment = "Neutral"
-
 
     summary = f"This course ({course}) taught by {instructor} has mostly {sentiment.lower()} feedback based on this review."
-
-    # Flag logic (adjust words as needed)
     bad_words = ["stupid", "hate", "trash", "idiot", "useless", "worst","shit", "fuck", "suck", "bitch"]
     flagged = any(word in review.lower() for word in bad_words)
 
@@ -117,7 +77,6 @@ def submit_review():
         "flagged": flagged
     })
 
-# Route to get reviews
 @app.route('/get-reviews', methods=['GET'])
 def get_reviews():
     conn = sqlite3.connect("reviews.db")
@@ -140,7 +99,6 @@ def get_reviews():
 
     return jsonify(reviews), 200
 
-# Chatbot (uses keywords in reviews)
 @app.route("/chat", methods=["POST"])
 def chat():
     user_message = request.json.get("message", "").lower()
@@ -148,9 +106,9 @@ def chat():
         "project": ["project", "project-based", "no exam", "final project"],
         "exam": ["exam", "midterm", "test", "quiz", "exam-heavy"],
         "flexible": ["flexible", "easy deadline", "no attendance", "lenient"],
-        "strict": ["strict", "tough", "hard grader", "heavy rules", "mandatory attendance"],
+        "strict": ["strict", "tough", "hard grader", "mandatory attendance"],
         "group": ["group", "group work", "team project", "collaborative"],
-        "helpful": ["helpful", "supportive", "answers questions", "kind", "responsive"]
+        "helpful": ["helpful", "supportive", "kind", "responsive"]
     }
 
     conn = sqlite3.connect("reviews.db")
@@ -164,23 +122,21 @@ def chat():
             if term in user_message:
                 matched = True
                 cursor.execute("""
-                    SELECT course, instructor, rating 
-                    FROM reviews 
+                    SELECT course, instructor, rating FROM reviews
                     WHERE review LIKE ? AND sentiment = 'Positive'
                     ORDER BY rating DESC LIMIT 3
                 """, (f"%{term}%",))
                 results = cursor.fetchall()
-
                 if results:
                     response += f"<b>{category.title()}-related suggestions:</b>\n"
                     for course, instructor, rating in results:
                         response += f"• {course} (Instructor: {instructor}, Rating: {rating}/5)\n"
                 break
 
-    if not matched or response == "":
-        response = "Try asking me about project-based, exam-focused, flexible, or strict courses! 😊"
-
     conn.close()
+    if not matched or response == "":
+        response = "Try asking about project-based, exam-heavy, or flexible courses! 😊"
+
     return jsonify({"reply": response})
 
 @app.route("/delete-review-by-index", methods=["POST", "OPTIONS"])
@@ -207,13 +163,27 @@ def delete_review_by_index():
 
     return jsonify({"message": "Review deleted"}), 200
 
-from flask import Flask, render_template
+# DB setup
+def init_db():
+    conn = sqlite3.connect("reviews.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS reviews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            course TEXT,
+            instructor TEXT,
+            rating INTEGER,
+            review TEXT,
+            sentiment TEXT,
+            summary TEXT,
+            flagged INTEGER DEFAULT 0
+        )
+    """)
+    conn.commit()
+    conn.close()
 
-app = Flask(__name__)
+init_db()
 
-
-import os
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port)
-
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
