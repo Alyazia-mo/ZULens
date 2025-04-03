@@ -13,28 +13,29 @@ CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 sia = SentimentIntensityAnalyzer()
 
 
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, render_template
+
+app = Flask(__name__, template_folder='templates', static_folder='static')
 
 @app.route('/')
-def homepage_redirect():
+def homepage():
     return render_template('homepage.html')
 
 @app.route('/about-us')
-def about_us():
+def about():
     return render_template('about-us.html')
+
+@app.route('/contact-us')
+def contact():
+    return render_template('contact-us.html')
 
 @app.route('/reviews')
 def reviews():
     return render_template('reviews.html')
 
-@app.route('/submit_review')
+@app.route('/submit-review-page')
 def submit_review_page():
     return render_template('submit_review.html')
-
-@app.route('/contact-us')
-def contact_us():
-    return render_template('contact-us.html')
-
 
 # Initialize database if not exists
 def init_db():
