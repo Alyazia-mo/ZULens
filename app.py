@@ -178,30 +178,32 @@ def get_reviews():
 
 @app.route('/get-my-reviews', methods=['GET'])
 def get_my_reviews():
-    if not session.get("user_id"):
-        return redirect(url_for('login_page'))
-    return render_template('my_reviews.html')
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Not logged in"}), 401
 
     conn = sqlite3.connect("reviews.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT id, course, instructor, rating, review, sentiment, summary, flagged FROM reviews WHERE user_id = ?", (user_id,))
+    cursor.execute("""
+        SELECT id, course, instructor, rating, review, sentiment, summary, flagged 
+        FROM reviews WHERE user_id = ?
+    """, (user_id,))
     rows = cursor.fetchall()
     conn.close()
 
-    reviews = []
-    for row in rows:
-        reviews.append({
-            "id": row[0],
-            "course": row[1],
-            "instructor": row[2],
-            "rating": row[3],
-            "review": row[4],
-            "sentiment": row[5],
-            "summary": row[6],
-            "flagged": bool(row[7])
-        })
+    reviews = [{
+        "id": row[0],
+        "course": row[1],
+        "instructor": row[2],
+        "rating": row[3],
+        "review": row[4],
+        "sentiment": row[5],
+        "summary": row[6],
+        "flagged": bool(row[7])
+    } for row in rows]
 
-    return jsonify(reviews), 200
+    return jsonify(reviews)
+
 
 @app.route("/delete-review-by-id", methods=["POST"])
 def delete_review_by_id():
