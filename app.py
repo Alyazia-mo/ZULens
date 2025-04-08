@@ -99,13 +99,18 @@ def login_user():
 @app.route("/logout", methods=["POST"])
 def logout_user():
     session.clear()
-    return jsonify({"message": "Logged out"}), 200
+    return jsonify({"message": "Logged out", "redirect": "/"})
+
 
 
 # ---------- REVIEWS ----------
 
 @app.route('/submit-review', methods=['POST'])
 def submit_review():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+    
     data = request.json
     course = data.get("course", "").strip()
     instructor = data.get("instructor", "").strip()
@@ -173,9 +178,9 @@ def get_reviews():
 
 @app.route('/get-my-reviews', methods=['GET'])
 def get_my_reviews():
-    user_id = session.get("user_id")
-    if not user_id:
-        return jsonify([])
+    if not session.get("user_id"):
+        return redirect(url_for('login_page'))
+    return render_template('my_reviews.html')
 
     conn = sqlite3.connect("reviews.db")
     cursor = conn.cursor()

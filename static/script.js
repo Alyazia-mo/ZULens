@@ -122,16 +122,25 @@ if (response.ok) {
 
 const logoutBtn = document.getElementById("logoutBtn");
 if (logoutBtn) {
-  logoutBtn.addEventListener("click", async () => {
-    const res = await fetch("/logout", { method: "POST" });
+  logoutBtn.addEventListener("click", async function () {
+    try {
+      const res = await fetch("/logout", {
+        method: "POST",
+      });
+      const data = await res.json();
 
-    if (res.ok) {
-      window.location.href = "/";
-    } else {
-      alert("❌ Failed to log out.");
+      if (data.redirect) {
+        window.location.href = data.redirect;
+      } else {
+        alert("Logged out.");
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
     }
   });
 }
+
+
 
   // Chatbot toggle
   const chatbotToggle = document.getElementById("chatbot-toggle");
