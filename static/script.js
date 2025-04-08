@@ -119,10 +119,10 @@ if (response.ok) {
   });
 }
 
-
-const logoutBtn = document.getElementById("logoutBtn");
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", () => {
+const logoutForm = document.querySelector("form[action='/logout']");
+if (logoutForm) {
+  logoutForm.addEventListener("submit", function (e) {
+    e.preventDefault();
     fetch("/logout", {
       method: "POST"
     })
