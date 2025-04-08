@@ -46,8 +46,11 @@ def login_page():
 def signup_page():
     return render_template('signup.html')
 
+
 @app.route('/my-reviews')
 def my_reviews_page():
+    if "user_id" not in session:
+        return redirect(url_for("login_page"))
     return render_template('my_reviews.html')
 
 
@@ -207,11 +210,6 @@ def delete_review_by_id():
     conn.close()
     return jsonify({"message": "Review deleted"}), 200
 
-@app.route('/my-reviews')
-def my_reviews_page():
-    if "user_id" not in session:
-        return redirect(url_for("login_page"))
-    return render_template('my_reviews.html')
 
 # ---------- CHATBOT ----------
 
