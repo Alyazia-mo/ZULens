@@ -94,28 +94,30 @@ document.addEventListener("DOMContentLoaded", function () {
           body: JSON.stringify(reviewData)
         });
 
-        // 💡 Handle login redirect
-        if (response.status === 401) {
-          const modal = new bootstrap.Modal(document.getElementById("loginModal"));
-          modal.show();
-          return;
-        }
+// Handle login redirect
+const result = await response.json();
 
-        const result = await response.json();
+if (response.status === 401) {
+  // Not logged in – show login modal
+  const modal = new bootstrap.Modal(document.getElementById("loginModal"));
+  modal.show();
+  return;
+}
 
-        if (response.ok) {
-          alert(`✅ Review submitted!\nSentiment: ${result.sentiment}\nSummary: ${result.summary}`);
-          form.reset();
-          warningBox.style.display = "none";
-        } else {
-          alert("❌ Error: " + (result.error || "Something went wrong"));
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        alert("❌ Server error. Please make sure the backend is running.");
-      }
-    });
+if (response.ok) {
+  alert(`✅ Review submitted!\nSentiment: ${result.sentiment}\nSummary: ${result.summary}`);
+  form.reset();
+  warningBox.style.display = "none";
+} else {
+  alert("❌ Error: " + (result.error || "Something went wrong"));
+}
+
+} catch (error) {
+  console.error("Error:", error);
+  alert("❌ Server error. Please make sure the backend is running.");
   }
+  });
+}
 
 
 const logoutBtn = document.getElementById("logoutBtn");
