@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, session, redirect, url_for
 from flask_cors import CORS
 import sqlite3, os
 import nltk
@@ -7,9 +7,12 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 nltk.download("vader_lexicon")
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
+app.secret_key = "your_secret_key_here"  # CHANGE THIS TO A SECURE RANDOM VALUE
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 sia = SentimentIntensityAnalyzer()
+
+# ---------- PAGE ROUTES ----------
 
 @app.route('/')
 def homepage():
@@ -31,12 +34,72 @@ def reviews():
 def submit_review_page():
     return render_template('submit_review.html')
 
-@app.route("/admin")
+@app.route('/admin')
 def admin_panel():
-    return render_template("admin_panel.html")
+    return render_template('admin_panel.html')
+
+@app.route('/login')
+def login_page():
+    return render_template('login.html')
+
+@app.route('/signup')
+def signup_page():
+    return render_template('signup.html')
+
+@app.route('/my-reviews')
+def my_reviews_page():
+    return render_template('my_reviews.html')
 
 
-# ----------------- Review Routes -----------------
+# ---------- USER AUTH ----------
+
+@app.route("/signup-user", methods=["POST"])
+def signup_user():
+    data = request.json
+    username = data.get("username", "").strip()
+    password = data.get("password", "").strip()
+
+    if not username or not password:
+        return jsonify({"error": "Missing fields"}), 400
+
+    conn = sqlite3.connect("reviews.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+    if cursor.fetchone():
+        return jsonify({"error": "Username already exists"}), 409
+
+    cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Account created successfully"}), 200
+
+@app.route("/login-user", methods=["POST"])
+def login_user():
+    data = request.json
+    username = data.get("username", "").strip()
+    password = data.get("password", "").strip()
+
+    conn = sqlite3.connect("reviews.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM users WHERE username = ? AND password = ?", (username, password))
+    user = cursor.fetchone()
+    conn.close()
+
+    if user:
+        session["user_id"] = user[0]
+        session["username"] = username
+        return jsonify({"message": "Login successful"}), 200
+    else:
+        return jsonify({"error": "Invalid credentials"}), 401
+
+@app.route("/logout", methods=["POST"])
+def logout_user():
+    session.clear()
+    return jsonify({"message": "Logged out"}), 200
+
+
+# ---------- REVIEWS ----------
 
 @app.route('/submit-review', methods=['POST'])
 def submit_review():
@@ -45,6 +108,7 @@ def submit_review():
     instructor = data.get("instructor", "").strip()
     review = data.get("review", "").strip()
     rating = int(data.get("rating", 3))
+    user_id = session.get("user_id", None)
 
     if not course or not instructor or not review:
         return jsonify({"error": "Missing fields"}), 400
@@ -69,9 +133,9 @@ def submit_review():
     conn = sqlite3.connect("reviews.db")
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO reviews (course, instructor, rating, review, sentiment, summary, flagged)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (course, instructor, rating, review, sentiment, summary, int(flagged)))
+        INSERT INTO reviews (course, instructor, rating, review, sentiment, summary, flagged, user_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (course, instructor, rating, review, sentiment, summary, int(flagged), user_id))
     conn.commit()
     conn.close()
 
@@ -103,6 +167,53 @@ def get_reviews():
         })
 
     return jsonify(reviews), 200
+
+@app.route('/get-my-reviews', methods=['GET'])
+def get_my_reviews():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify([])
+
+    conn = sqlite3.connect("reviews.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, course, instructor, rating, review, sentiment, summary, flagged FROM reviews WHERE user_id = ?", (user_id,))
+    rows = cursor.fetchall()
+    conn.close()
+
+    reviews = []
+    for row in rows:
+        reviews.append({
+            "id": row[0],
+            "course": row[1],
+            "instructor": row[2],
+            "rating": row[3],
+            "review": row[4],
+            "sentiment": row[5],
+            "summary": row[6],
+            "flagged": bool(row[7])
+        })
+
+    return jsonify(reviews), 200
+
+@app.route("/delete-review-by-id", methods=["POST"])
+def delete_review_by_id():
+    user_id = session.get("user_id")
+    review_id = request.json.get("review_id")
+
+    conn = sqlite3.connect("reviews.db")
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM reviews WHERE id = ? AND user_id = ?", (review_id, user_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Review deleted"}), 200
+
+@app.route('/my-reviews')
+def my_reviews_page():
+    if "user_id" not in session:
+        return redirect(url_for("login_page"))
+    return render_template('my_reviews.html')
+
+# ---------- CHATBOT ----------
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -144,34 +255,21 @@ def chat():
 
     return jsonify({"reply": response})
 
-@app.route("/delete-review-by-index", methods=["POST", "OPTIONS"])
-def delete_review_by_index():
-    if request.method == "OPTIONS":
-        return '', 200
 
-    index = request.json.get("index")
-    if index is None:
-        return jsonify({"error": "Missing index"}), 400
+# ---------- INIT DB ----------
 
-    conn = sqlite3.connect("reviews.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT id FROM reviews")
-    ids = cursor.fetchall()
-
-    if index < 0 or index >= len(ids):
-        return jsonify({"error": "Index out of range"}), 404
-
-    review_id = ids[index][0]
-    cursor.execute("DELETE FROM reviews WHERE id = ?", (review_id,))
-    conn.commit()
-    conn.close()
-
-    return jsonify({"message": "Review deleted"}), 200
-
-# DB setup
 def init_db():
     conn = sqlite3.connect("reviews.db")
     cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
+        )
+    """)
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS reviews (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -181,9 +279,12 @@ def init_db():
             review TEXT,
             sentiment TEXT,
             summary TEXT,
-            flagged INTEGER DEFAULT 0
+            flagged INTEGER DEFAULT 0,
+            user_id INTEGER,
+            FOREIGN KEY(user_id) REFERENCES users(id)
         )
     """)
+
     conn.commit()
     conn.close()
 

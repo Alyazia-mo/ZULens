@@ -36,18 +36,15 @@ document.addEventListener("DOMContentLoaded", function () {
     reviewInput.addEventListener("input", () => {
       const reviewText = reviewInput.value.toLowerCase();
       let message = "";
-      let hasFlaggedWords = false;
 
       Object.keys(flaggedWords).forEach(word => {
         if (reviewText.includes(word)) {
-          hasFlaggedWords = true;
           message += `⚠️ Consider replacing "<strong>${word}</strong>" with "<strong>${flaggedWords[word]}</strong>"<br>`;
         }
       });
 
       flaggedPhrases.forEach(phrase => {
         if (reviewText.includes(phrase)) {
-          hasFlaggedWords = true;
           message += `⚠️ Please avoid the phrase "<strong>${phrase}</strong>"<br>`;
         }
       });
@@ -94,8 +91,15 @@ document.addEventListener("DOMContentLoaded", function () {
         const response = await fetch("/submit-review", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(reviewData),
+          body: JSON.stringify(reviewData)
         });
+
+        // 💡 Handle login redirect
+        if (response.status === 401) {
+          const modal = new bootstrap.Modal(document.getElementById("loginModal"));
+          modal.show();
+          return;
+        }
 
         const result = await response.json();
 
@@ -113,6 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // Chatbot toggle
   const chatbotToggle = document.getElementById("chatbot-toggle");
   const chatbotModal = document.getElementById("chatbot-modal");
   const closeChatbot = document.getElementById("close-chatbot");

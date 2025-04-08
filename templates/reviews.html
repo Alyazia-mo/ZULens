@@ -26,10 +26,23 @@
         <li class="nav-item"><a class="nav-link" href="/reviews">Reviews</a></li>
         <li class="nav-item"><a class="nav-link" href="/submit-review-page">Submit a Review</a></li>
         <li class="nav-item"><a class="nav-link" href="/contact-us">Contact Us</a></li>    
-        <li class="nav-item">
-          <a class="nav-link btn btn-primary" href="login.html">Login</a>
-        </li>
-      </ul>
+        <li class="nav-item"><a class="nav-link" href="/my-reviews">My Reviews</a></li>
+      
+        {% if session.get('username') %}
+          <li class="nav-item">
+            <span class="nav-link">👋 Welcome, {{ session['username'] }}</span>
+          </li>
+          <li class="nav-item">
+            <form action="/logout" method="post" style="display:inline;">
+              <button class="btn btn-sm btn-outline-light ms-2" type="submit">Logout</button>
+            </form>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link btn btn-primary ms-2" href="/login">Login</a>
+          </li>
+        {% endif %}
+      </ul>      
     </div>
 </nav>
 
