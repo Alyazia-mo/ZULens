@@ -117,6 +117,20 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    const res = await fetch("/logout", { method: "POST" });
+
+    if (res.ok) {
+      window.location.href = "/";
+    } else {
+      alert("❌ Failed to log out.");
+    }
+  });
+}
+
   // Chatbot toggle
   const chatbotToggle = document.getElementById("chatbot-toggle");
   const chatbotModal = document.getElementById("chatbot-modal");
