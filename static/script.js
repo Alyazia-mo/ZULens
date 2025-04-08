@@ -122,21 +122,18 @@ if (response.ok) {
 
 const logoutBtn = document.getElementById("logoutBtn");
 if (logoutBtn) {
-  logoutBtn.addEventListener("click", async function () {
-    try {
-      const res = await fetch("/logout", {
-        method: "POST",
-      });
-      const data = await res.json();
-
+  logoutBtn.addEventListener("click", () => {
+    fetch("/logout", {
+      method: "POST"
+    })
+    .then(res => res.json())
+    .then(data => {
       if (data.redirect) {
         window.location.href = data.redirect;
       } else {
-        alert("Logged out.");
+        window.location.href = "/";
       }
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+    });
   });
 }
 
