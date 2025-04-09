@@ -119,10 +119,9 @@ if (response.ok) {
   });
 }
 
-const logoutForm = document.querySelector("form[action='/logout']");
-if (logoutForm) {
-  logoutForm.addEventListener("submit", function (e) {
-    e.preventDefault();
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", () => {
     fetch("/logout", {
       method: "POST"
     })
@@ -136,6 +135,7 @@ if (logoutForm) {
     });
   });
 }
+
 
 
 
