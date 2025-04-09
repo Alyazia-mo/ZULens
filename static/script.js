@@ -120,21 +120,17 @@ if (response.ok) {
 }
 
 const logoutBtn = document.getElementById("logoutBtn");
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", () => {
-    fetch("/logout", {
-      method: "POST"
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.redirect) {
-        window.location.href = "/";
-      }
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      fetch("/logout", {
+        method: "POST"
+      })
+      .then(res => res.json())
+      .then(data => {
+        window.location.href = data.redirect || "/";
+      });
     });
-  });
-}
-
-
+  }
 
 
   // Chatbot toggle
