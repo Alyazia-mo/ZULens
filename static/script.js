@@ -128,8 +128,6 @@ if (logoutBtn) {
     .then(res => res.json())
     .then(data => {
       if (data.redirect) {
-        window.location.href = data.redirect;
-      } else {
         window.location.href = "/";
       }
     });
