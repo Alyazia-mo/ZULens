@@ -154,28 +154,6 @@ def submit_review():
         "flagged": flagged
     })
 
-@app.route('/get-reviews', methods=['GET'])
-def get_reviews():
-    conn = sqlite3.connect("reviews.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, course, instructor, rating, review, sentiment, summary, flagged FROM reviews")
-    rows = cursor.fetchall()
-    conn.close()
-
-    reviews = []
-    for row in rows:
-        reviews.append({
-            "id": row[0], 
-            "instructor": row[2],
-            "rating": row[3],
-            "review": row[4],
-            "sentiment": row[5],
-            "summary": row[6],
-            "flagged": bool(row[7])
-        })
-
-    return jsonify(reviews), 200
-
 @app.route('/get-my-reviews', methods=['GET'])
 def get_my_reviews():
     user_id = session.get("user_id")
