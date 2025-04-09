@@ -204,7 +204,17 @@ def get_my_reviews():
 
     return jsonify(reviews)
 
-
+@app.route("/delete-review-by-id", methods=["POST"])
+def delete_review_by_id():
+     user_id = session.get("user_id")
+     review_id = request.json.get("review_id")
+ 
+     conn = sqlite3.connect("reviews.db")
+     cursor = conn.cursor()
+     cursor.execute("DELETE FROM reviews WHERE id = ? AND user_id = ?", (review_id, user_id))
+     conn.commit()
+     conn.close()
+     return jsonify({"message": "Review deleted"}), 200
 
 
 # ---------- CHATBOT ----------
