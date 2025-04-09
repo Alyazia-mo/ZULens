@@ -1,0 +1,132 @@
+/* General */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f4f4;
+    color: #222;
+    line-height: 1.6;
+}
+
+/* Navbar */
+.navbar {
+    background-color: #5A002B !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link {
+    color: #ffffff !important;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #cccccc !important;
+}
+
+/* Hero Section */
+header {
+    background-color: #5A002B;
+    color: white;
+    padding: 60px 20px;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+#search {
+    border-radius: 30px;
+    padding: 12px 20px;
+    max-width: 600px;
+    margin-top: 20px;
+    border: none;
+    box-shadow: 0 0 10px rgba(90, 0, 43, 0.2);
+}
+
+/* Section Headings */
+section h2 {
+    color: #5A002B;
+    font-weight: bold;
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    border-radius: 15px;
+    background-color: #fff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    color: #5A002B;
+    font-weight: 600;
+}
+
+.card-text {
+    color: #444;
+}
+
+/* About Section */
+#about {
+    background-color: #fff;
+    padding: 30px;
+    border-left: 4px solid #5A002B;
+}
+
+/* How It Works */
+#how-it-works .card {
+    border-left: 4px solid #5A002B;
+    background-color: #fff;
+}
+
+#submit-review {
+    background: linear-gradient(135deg, #e6e0e0, #bcb6b6);  /* soft gradient from light gray to beige */
+    color: #5A002B;  /* maroon text */
+    padding: 60px 20px;
+    border-radius: 10px;
+}
+
+#submit-review .btn {
+    background-color: #5A002B;  /* maroon button */
+    color: white;
+    font-weight: bold;
+    border-radius: 25px;
+    border: none;
+}
+
+#submit-review .btn:hover {
+    background-color: #3b001c;  /* deeper maroon on hover */
+    color: white;
+}
+
+
+
+/* Contact Form */
+form input, form textarea {
+    border-radius: 10px;
+    border: 1px solid #ccc;
+}
+
+form button {
+    background-color: #5A002B;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 25px;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+form button:hover {
+    background-color: #3b001c;
+}
+
+/* Footer */
+footer {
+    background-color: #5A002B;
+    color: #ffffff;
+    border-top: 3px solid #3b001c;
+    padding: 20px 0;
+    font-size: 0.95rem;
+}
+
