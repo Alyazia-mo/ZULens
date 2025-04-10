@@ -166,6 +166,7 @@ def get_reviews():
     for row in rows:
         reviews.append({
             "id": row[0], 
+            "course": row[1],
             "instructor": row[2],
             "rating": row[3],
             "review": row[4],
