@@ -3,14 +3,19 @@ from flask_cors import CORS
 import sqlite3, os
 import nltk
 from nltk.sentiment import SentimentIntensityAnalyzer
+from transformers import pipeline
 
 nltk.download("vader_lexicon")
 
+# Initialize app
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.secret_key = "your_secret_key_here"  # CHANGE THIS TO A SECURE RANDOM VALUE
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 sia = SentimentIntensityAnalyzer()
+
+# Initialize AI-based inappropriate content detection model
+classifier = pipeline("text-classification", model="unitary/toxic-bert")  # Fine-tuned model for toxic content detection
 
 # ---------- PAGE ROUTES ----------
 
@@ -102,7 +107,6 @@ def logout_user():
     return jsonify({"message": "Logged out", "redirect": "/"})
 
 
-
 # ---------- REVIEWS ----------
 
 @app.route('/submit-review', methods=['POST'])
@@ -116,10 +120,14 @@ def submit_review():
     instructor = data.get("instructor", "").strip()
     review = data.get("review", "").strip()
     rating = int(data.get("rating", 3))
-    user_id = session.get("user_id", None)
 
     if not course or not instructor or not review:
         return jsonify({"error": "Missing fields"}), 400
+
+    # AI moderation to check for inappropriate content using the fine-tuned model
+    result = classifier(review)
+    if result[0]['label'] == 'LABEL_1':  # Assuming 'LABEL_1' corresponds to toxic content
+        return jsonify({"error": "Review contains inappropriate content"}), 400
 
     sentiment_score = sia.polarity_scores(review)
     compound = sentiment_score["compound"]
@@ -135,24 +143,20 @@ def submit_review():
         sentiment = "Negative"
 
     summary = f"This course ({course}) taught by {instructor} has mostly {sentiment.lower()} feedback based on this review."
-    bad_words = ["stupid", "hate", "trash", "idiot", "useless", "worst","shit", "fuck", "suck", "bitch"]
-    flagged = any(word in review.lower() for word in bad_words)
-
+    
     conn = sqlite3.connect("reviews.db")
     cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO reviews (course, instructor, rating, review, sentiment, summary, flagged, user_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (course, instructor, rating, review, sentiment, summary, int(flagged), user_id))
+    cursor.execute("""INSERT INTO reviews (course, instructor, rating, review, sentiment, summary, flagged, user_id) 
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", (course, instructor, rating, review, sentiment, summary, 0, user_id))
     conn.commit()
     conn.close()
 
     return jsonify({
         "message": "Review submitted successfully",
         "sentiment": sentiment,
-        "summary": summary,
-        "flagged": flagged
+        "summary": summary
     })
+
 
 @app.route('/get-reviews', methods=['GET'])
 def get_reviews():
@@ -177,49 +181,6 @@ def get_reviews():
 
     return jsonify(reviews), 200
 
-@app.route('/get-my-reviews', methods=['GET'])
-def get_my_reviews():
-    user_id = session.get("user_id")
-    if not user_id:
-        return jsonify({"error": "Not logged in"}), 401
-
-    conn = sqlite3.connect("reviews.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT id, course, instructor, rating, review, sentiment, summary, flagged 
-        FROM reviews WHERE user_id = ?
-    """, (user_id,))
-    rows = cursor.fetchall()
-    conn.close()
-
-    reviews = [{
-        "id": row[0],
-        "course": row[1],
-        "instructor": row[2],
-        "rating": row[3],
-        "review": row[4],
-        "sentiment": row[5],
-        "summary": row[6],
-        "flagged": bool(row[7])
-    } for row in rows]
-
-    return jsonify(reviews)
-
-@app.route("/delete-review-by-id", methods=["POST"])
-def delete_review_by_id():
-     user_id = session.get("user_id")
-     review_id = request.json.get("review_id")
- 
-     conn = sqlite3.connect("reviews.db")
-     cursor = conn.cursor()
-     cursor.execute("DELETE FROM reviews WHERE id = ? AND user_id = ?", (review_id, user_id))
-     conn.commit()
-     conn.close()
-     return jsonify({"message": "Review deleted"}), 200
-
-
-# ---------- CHATBOT ----------
-
 @app.route("/chat", methods=["POST"])
 def chat():
     user_message = request.json.get("message", "").lower()
@@ -242,11 +203,9 @@ def chat():
         for term in terms:
             if term in user_message:
                 matched = True
-                cursor.execute("""
-                    SELECT course, instructor, rating FROM reviews
-                    WHERE review LIKE ? AND sentiment = 'Positive'
-                    ORDER BY rating DESC LIMIT 3
-                """, (f"%{term}%",))
+                cursor.execute("""SELECT course, instructor, rating FROM reviews 
+                                  WHERE review LIKE ? AND sentiment = 'Positive'
+                                  ORDER BY rating DESC LIMIT 3""", (f"%{term}%",))
                 results = cursor.fetchall()
                 if results:
                     response += f"<b>{category.title()}-related suggestions:</b>\n"
@@ -267,28 +226,24 @@ def init_db():
     conn = sqlite3.connect("reviews.db")
     cursor = conn.cursor()
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL
-        )
-    """)
+    cursor.execute("""CREATE TABLE IF NOT EXISTS users (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        username TEXT UNIQUE NOT NULL,
+                        password TEXT NOT NULL
+                    )""")
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS reviews (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            course TEXT,
-            instructor TEXT,
-            rating INTEGER,
-            review TEXT,
-            sentiment TEXT,
-            summary TEXT,
-            flagged INTEGER DEFAULT 0,
-            user_id INTEGER,
-            FOREIGN KEY(user_id) REFERENCES users(id)
-        )
-    """)
+    cursor.execute("""CREATE TABLE IF NOT EXISTS reviews (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        course TEXT,
+                        instructor TEXT,
+                        rating INTEGER,
+                        review TEXT,
+                        sentiment TEXT,
+                        summary TEXT,
+                        flagged INTEGER DEFAULT 0,
+                        user_id INTEGER,
+                        FOREIGN KEY(user_id) REFERENCES users(id)
+                    )""")
 
     conn.commit()
     conn.close()

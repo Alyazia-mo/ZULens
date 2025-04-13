@@ -3,68 +3,36 @@ document.addEventListener("DOMContentLoaded", function () {
   const reviewInput = document.getElementById("review");
   const warningBox = document.getElementById("warning-box");
 
-  const flaggedWords = {
-    "stupid": "not helpful",
-    "idiot": "unprofessional",
-    "useless": "not useful",
-    "hate": "strongly dislike",
-    "trash": "poor quality",
-    "dumb": "confusing",
-    "worst": "needs improvement",
-    "pathetic": "disappointing",
-    "annoying": "frustrating",
-    "terrible": "unsatisfactory",
-    "sucks": "could be better",
-    "lazy": "unresponsive",
-    "mean": "not supportive",
-    "bad": "ineffective",
-    "awful": "not ideal",
-    "fuck": "inappropriate",
-    "bitch": "inappropriate",
-    "shit": "inappropriate"
-  };
-
-  const flaggedPhrases = [
-    "waste of time",
-    "should be fired",
-    "doesn't know how to teach",
-    "professor is a joke",
-    "i hate this class"
-  ];
-
   if (reviewInput) {
-    reviewInput.addEventListener("input", () => {
-      const reviewText = reviewInput.value.toLowerCase();
-      let message = "";
+    reviewInput.addEventListener("input", async () => {
+      const reviewText = reviewInput.value.trim();
 
-      Object.keys(flaggedWords).forEach(word => {
-        if (reviewText.includes(word)) {
-          message += `⚠️ Consider replacing "<strong>${word}</strong>" with "<strong>${flaggedWords[word]}</strong>"<br>`;
-        }
+      // Check review with the backend AI moderation
+      const response = await fetch("/submit-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          course: document.getElementById("course").value.trim(),
+          instructor: document.getElementById("professor").value.trim(),
+          rating: document.getElementById("rating").value.trim(),
+          review: reviewText
+        })
       });
 
-      flaggedPhrases.forEach(phrase => {
-        if (reviewText.includes(phrase)) {
-          message += `⚠️ Please avoid the phrase "<strong>${phrase}</strong>"<br>`;
-        }
-      });
+      const data = await response.json();
 
-      const submitButton = form.querySelector("button[type='submit']");
-      if (message) {
-        warningBox.innerHTML = message;
+      if (response.status === 400 && data.error) {
+        warningBox.innerHTML = `⚠️ ${data.error}`;
         warningBox.style.display = "block";
-        submitButton.disabled = true;
-        submitButton.style.opacity = "0.6";
-        submitButton.style.cursor = "not-allowed";
+        document.querySelector("button[type='submit']").disabled = true;
       } else {
         warningBox.style.display = "none";
-        submitButton.disabled = false;
-        submitButton.style.opacity = "1";
-        submitButton.style.cursor = "pointer";
+        document.querySelector("button[type='submit']").disabled = false;
       }
     });
   }
 
+  // Review form submission handler
   if (form) {
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
@@ -94,32 +62,31 @@ document.addEventListener("DOMContentLoaded", function () {
           body: JSON.stringify(reviewData)
         });
 
-// Handle login redirect
-const result = await response.json();
+        const result = await response.json();
 
-if (response.status === 401) {
-  // Not logged in – show login modal
-  const modal = new bootstrap.Modal(document.getElementById("loginModal"));
-  modal.show();
-  return;
-}
+        if (response.status === 401) {
+          // Not logged in – show login modal
+          const modal = new bootstrap.Modal(document.getElementById("loginModal"));
+          modal.show();
+          return;
+        }
 
-if (response.ok) {
-  alert(`✅ Review submitted!\nSentiment: ${result.sentiment}\nSummary: ${result.summary}`);
-  form.reset();
-  warningBox.style.display = "none";
-} else {
-  alert("❌ Error: " + (result.error || "Something went wrong"));
-}
+        if (response.ok) {
+          alert(`✅ Review submitted!\nSentiment: ${result.sentiment}\nSummary: ${result.summary}`);
+          form.reset();
+          warningBox.style.display = "none";
+        } else {
+          alert("❌ Error: " + (result.error || "Something went wrong"));
+        }
 
-} catch (error) {
-  console.error("Error:", error);
-  alert("❌ Server error. Please make sure the backend is running.");
+      } catch (error) {
+        console.error("Error:", error);
+        alert("❌ Server error. Please make sure the backend is running.");
+      }
+    });
   }
-  });
-}
 
-const logoutBtn = document.getElementById("logoutBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
       fetch("/logout", {
@@ -131,7 +98,6 @@ const logoutBtn = document.getElementById("logoutBtn");
       });
     });
   }
-
 
   // Chatbot toggle
   const chatbotToggle = document.getElementById("chatbot-toggle");
