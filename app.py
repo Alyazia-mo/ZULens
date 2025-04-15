@@ -23,8 +23,10 @@ def load_model():
     model.eval()  # Set the model to evaluation mode
     return model, tokenizer
 
-classifier, _ = load_model()  # Load the model when needed
-
+try:
+    classifier = pipeline("text-classification", model="distilbert-base-uncased")
+except Exception as e:
+    print("Error loading model:", e)
 # ---------- PAGE ROUTES ----------
 
 @app.route('/')
