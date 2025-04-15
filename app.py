@@ -3,7 +3,7 @@ from flask_cors import CORS
 import sqlite3, os
 import nltk
 from nltk.sentiment import SentimentIntensityAnalyzer
-from transformers import pipeline
+from transformers import DistilBertTokenizer, DistilBertForSequenceClassification, pipeline
 
 nltk.download("vader_lexicon")
 
@@ -14,8 +14,16 @@ CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 sia = SentimentIntensityAnalyzer()
 
-# Initialize AI-based inappropriate content detection model
-classifier = pipeline("text-classification", model="unitary/toxic-bert")  # Fine-tuned model for toxic content detection
+# ---------- AI Model Initialization ----------
+
+def load_model():
+    model = DistilBertForSequenceClassification.from_pretrained("distilbert-base-uncased")
+    tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+    model = model.half()  # Convert model to FP16 to save memory
+    model.eval()  # Set the model to evaluation mode
+    return model, tokenizer
+
+classifier, _ = load_model()  # Load the model when needed
 
 # ---------- PAGE ROUTES ----------
 
@@ -51,13 +59,11 @@ def login_page():
 def signup_page():
     return render_template('signup.html')
 
-
 @app.route('/my-reviews')
 def my_reviews_page():
     if "user_id" not in session:
         return redirect(url_for("login_page"))
     return render_template('my_reviews.html')
-
 
 # ---------- USER AUTH ----------
 
@@ -156,69 +162,6 @@ def submit_review():
         "sentiment": sentiment,
         "summary": summary
     })
-
-
-@app.route('/get-reviews', methods=['GET'])
-def get_reviews():
-    conn = sqlite3.connect("reviews.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, course, instructor, rating, review, sentiment, summary, flagged FROM reviews")
-    rows = cursor.fetchall()
-    conn.close()
-
-    reviews = []
-    for row in rows:
-        reviews.append({
-            "id": row[0], 
-            "course": row[1],
-            "instructor": row[2],
-            "rating": row[3],
-            "review": row[4],
-            "sentiment": row[5],
-            "summary": row[6],
-            "flagged": bool(row[7])
-        })
-
-    return jsonify(reviews), 200
-
-@app.route("/chat", methods=["POST"])
-def chat():
-    user_message = request.json.get("message", "").lower()
-    keywords = {
-        "project": ["project", "project-based", "no exam", "final project"],
-        "exam": ["exam", "midterm", "test", "quiz", "exam-heavy"],
-        "flexible": ["flexible", "easy deadline", "no attendance", "lenient"],
-        "strict": ["strict", "tough", "hard grader", "mandatory attendance"],
-        "group": ["group", "group work", "team project", "collaborative"],
-        "helpful": ["helpful", "supportive", "kind", "responsive"]
-    }
-
-    conn = sqlite3.connect("reviews.db")
-    cursor = conn.cursor()
-
-    matched = False
-    response = ""
-
-    for category, terms in keywords.items():
-        for term in terms:
-            if term in user_message:
-                matched = True
-                cursor.execute("""SELECT course, instructor, rating FROM reviews 
-                                  WHERE review LIKE ? AND sentiment = 'Positive'
-                                  ORDER BY rating DESC LIMIT 3""", (f"%{term}%",))
-                results = cursor.fetchall()
-                if results:
-                    response += f"<b>{category.title()}-related suggestions:</b>\n"
-                    for course, instructor, rating in results:
-                        response += f"• {course} (Instructor: {instructor}, Rating: {rating}/5)\n"
-                break
-
-    conn.close()
-    if not matched or response == "":
-        response = "Try asking about project-based, exam-heavy, or flexible courses! 😊"
-
-    return jsonify({"reply": response})
-
 
 # ---------- INIT DB ----------
 

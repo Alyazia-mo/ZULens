@@ -98,43 +98,4 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
   }
-
-  // Chatbot toggle
-  const chatbotToggle = document.getElementById("chatbot-toggle");
-  const chatbotModal = document.getElementById("chatbot-modal");
-  const closeChatbot = document.getElementById("close-chatbot");
-  const chatInput = document.getElementById("chat-input");
-
-  if (chatbotToggle && chatbotModal && closeChatbot) {
-    chatbotToggle.addEventListener("click", () => {
-      chatbotModal.style.display = "block";
-    });
-
-    closeChatbot.addEventListener("click", () => {
-      chatbotModal.style.display = "none";
-    });
-  }
-
-  if (chatInput) {
-    chatInput.addEventListener("keypress", async (e) => {
-      if (e.key === "Enter") {
-        const input = e.target.value.trim();
-        if (!input) return;
-
-        const log = document.getElementById("chat-log");
-        log.innerHTML += `<p><strong>You:</strong> ${input}</p>`;
-        e.target.value = "";
-
-        const res = await fetch("/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: input })
-        });
-
-        const data = await res.json();
-        log.innerHTML += `<p><strong>ZULens Bot:</strong> ${data.reply.replace(/\n/g, "<br>")}</p>`;
-        log.scrollTop = log.scrollHeight;
-      }
-    });
-  }
 });
