@@ -7,7 +7,7 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 nltk.download("vader_lexicon")
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
-app.secret_key = "your_secret_key_here"  # CHANGE THIS TO A SECURE RANDOM VALUE
+app.secret_key = "your_secret_key_here"
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 sia = SentimentIntensityAnalyzer()
@@ -45,7 +45,6 @@ def login_page():
 @app.route('/signup')
 def signup_page():
     return render_template('signup.html')
-
 
 @app.route('/my-reviews')
 def my_reviews_page():
@@ -102,6 +101,20 @@ def logout_user():
     return jsonify({"message": "Logged out", "redirect": "/"})
 
 
+# ---------- TONE CHECK ENDPOINT ----------
+
+@app.route("/check-tone", methods=["POST"])
+def check_tone():
+    review = request.json.get("review", "")
+    sentiment_score = sia.polarity_scores(review)
+    compound = sentiment_score["compound"]
+
+    warning = None
+    if compound <= -0.4:
+        warning = "⚠️ Your review seems harsh. Consider rewording to sound more constructive."
+
+    return jsonify({"warning": warning})
+
 
 # ---------- REVIEWS ----------
 
@@ -110,13 +123,12 @@ def submit_review():
     user_id = session.get("user_id")
     if not user_id:
         return jsonify({"error": "Unauthorized"}), 401
-    
+
     data = request.json
     course = data.get("course", "").strip()
     instructor = data.get("instructor", "").strip()
     review = data.get("review", "").strip()
     rating = int(data.get("rating", 3))
-    user_id = session.get("user_id", None)
 
     if not course or not instructor or not review:
         return jsonify({"error": "Missing fields"}), 400
@@ -135,8 +147,9 @@ def submit_review():
         sentiment = "Negative"
 
     summary = f"This course ({course}) taught by {instructor} has mostly {sentiment.lower()} feedback based on this review."
-    bad_words = ["stupid", "hate", "trash", "idiot", "useless", "worst","shit", "fuck", "suck", "bitch"]
-    flagged = any(word in review.lower() for word in bad_words)
+    
+    # Smarter flagging: reviews with harsh/very negative sentiment
+    flagged = compound <= -0.5
 
     conn = sqlite3.connect("reviews.db")
     cursor = conn.cursor()
@@ -165,7 +178,7 @@ def get_reviews():
     reviews = []
     for row in rows:
         reviews.append({
-            "id": row[0], 
+            "id": row[0],
             "course": row[1],
             "instructor": row[2],
             "rating": row[3],
@@ -207,15 +220,15 @@ def get_my_reviews():
 
 @app.route("/delete-review-by-id", methods=["POST"])
 def delete_review_by_id():
-     user_id = session.get("user_id")
-     review_id = request.json.get("review_id")
- 
-     conn = sqlite3.connect("reviews.db")
-     cursor = conn.cursor()
-     cursor.execute("DELETE FROM reviews WHERE id = ? AND user_id = ?", (review_id, user_id))
-     conn.commit()
-     conn.close()
-     return jsonify({"message": "Review deleted"}), 200
+    user_id = session.get("user_id")
+    review_id = request.json.get("review_id")
+
+    conn = sqlite3.connect("reviews.db")
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM reviews WHERE id = ? AND user_id = ?", (review_id, user_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Review deleted"}), 200
 
 
 # ---------- CHATBOT ----------
