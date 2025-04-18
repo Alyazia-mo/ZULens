@@ -19,22 +19,23 @@ body {
 h1 {
   font-size: 3em;
   font-weight: bold;
-  color: #5A002B; /* Maroon */
+  color: #5A002B;
   margin-bottom: 20px;
 }
 
 .section {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 40px;
   margin-bottom: 50px;
   text-align: left;
-  flex-wrap: wrap;
 }
 
 .section-content {
   flex: 1;
+  min-width: 250px;
 }
 
 h2 {
@@ -51,8 +52,9 @@ p {
 }
 
 .mission-image {
-  width: 30%;
+  width: 100%;
   max-width: 300px;
+  height: auto;
   border-radius: 10px;
   box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
   cursor: pointer;
@@ -115,67 +117,41 @@ footer a:hover {
   text-decoration: underline;
 }
 
-/* ========== NAVBAR ENHANCEMENTS FOR BOOTSTRAP ========== */
-.bg-maroon {
-  background-color: #5A002B !important;
-}
-
-.logo {
-  height: 40px;
-  width: auto;
-}
-
-.navbar-brand span {
-  color: white;
-}
-
-.nav-link {
-  color: #f8f9fa !important;
-  font-weight: 500;
-}
-
-.nav-link:hover {
-  color: #AD974F !important;
-}
-
-.btn-warning {
-  background-color: #AD974F;
-  border: none;
-  color: #fff;
-}
-
-.btn-warning:hover {
-  background-color: #caa755;
-  color: white;
-}
-
-.btn-outline-warning {
-  border-color: #AD974F;
-  color: #AD974F;
-}
-
-.btn-outline-warning:hover {
-  background-color: #AD974F;
-  color: white;
-}
-
-/* Mobile navbar dropdown background fix */
+/* ----------- RESPONSIVE DESIGN ----------- */
 @media (max-width: 768px) {
-  .navbar-collapse {
-    background-color: #5A002B;
-    padding: 10px 0;
-    border-radius: 10px;
+  .container {
+    padding: 30px 15px;
+    width: 90%;
   }
 
-  .navbar-nav .nav-item {
-    margin: 0.5rem 0;
+  h1 {
+    font-size: 2.2em;
   }
 
-  .navbar-brand span {
-    font-size: 1.2rem;
+  h2 {
+    font-size: 1.5em;
   }
 
-  .logo {
-    height: 32px;
+  p {
+    font-size: 1em;
+  }
+
+  .section {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .section-content {
+    text-align: center;
+  }
+
+  .why-choose li {
+    width: 140px;
+    height: 140px;
+    font-size: 13px;
+  }
+
+  .mission-image {
+    margin-top: 20px;
   }
 }
