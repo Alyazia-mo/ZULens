@@ -1,43 +1,67 @@
 /* NAVBAR */
 .navbar {
-    background-color: #5A002B !important;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    height: 100px; /* Set a fixed height */
-    overflow: visible;/* Prevent logo from pushing the height */
+  background-color: #5A002B !important;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  height: auto; /* remove fixed height for better responsiveness */
+  overflow: visible;
+}
+
+/* Logo styling */
+.navbar-brand img.logo {
+  height: 45px;
+  width: auto;
+  padding: 0;
+  margin: 0;
+}
+
+/* Navbar links */
+.navbar-nav {
+  gap: 30px;
+}
+
+.navbar-nav .nav-link {
+  color: #DADADA !important;
+  font-weight: 500;
+  font-size: 16px;
+  transition: color 0.3s ease;
+  text-align: center;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #AD974F !important;
+}
+
+/* Login button */
+.navbar-nav .btn-primary {
+  background-color: #AD974F;
+  color: #5A002B;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+}
+
+.navbar-nav .btn-primary:hover {
+  background-color: #916F33;
+  color: white;
+}
+
+/* Collapsed navbar styling (dropdown on mobile) */
+@media (max-width: 992px) {
+  .navbar-collapse {
+    background-color: #5A002B;
+    padding: 10px 0;
+    border-radius: 0 0 10px 10px;
+    margin-top: 10px;
   }
-  .navbar-brand img.logo {
-    height: 200px;
-    width: 180px;
-    padding: 0%;
-    margin: 0%;
-  }
-  
+
   .navbar-nav {
-    gap: 30px;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
   }
-  
-  .navbar-nav .nav-link {
-    color: #DADADA !important;
-    font-weight: 500;
-    font-size: 16px;
-    transition: color 0.3s ease;
+
+  .navbar-brand img.logo {
+    height: 40px;
   }
-  
-  .navbar-nav .nav-link:hover {
-    color: #AD974F !important;
-  }
-  
-  .navbar-nav .btn-primary {
-    background-color: #AD974F;
-    color: #5A002B;
-    font-weight: bold;
-    border: none;
-    border-radius: 8px;
-  }
-  
-  .navbar-nav .btn-primary:hover {
-    background-color: #916F33;
-    color: white;
-  }
-  
+}
