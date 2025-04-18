@@ -4,27 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>About Us - ZULens</title>
-
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-
-  <!-- Custom CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='about.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <!-- Navbar -->
+
   <nav class="navbar navbar-expand-lg navbar-dark bg-maroon px-3">
     <a class="navbar-brand d-flex align-items-center" href="/">
-      <img src="{{ url_for('static', filename='ZULens-logo.png') }}" alt="ZULens Logo" class="logo-img me-2"/>
-      <span class="fs-4 fw-bold text-light">ZULens</span>
+      <img src="{{ url_for('static', filename='ZULens-logo.png') }}" alt="ZULens Logo" class="logo me-2">
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
+      <ul class="navbar-nav ms-auto align-items-center">
         <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
         <li class="nav-item"><a class="nav-link active" href="/about-us">About Us</a></li>
         <li class="nav-item"><a class="nav-link" href="/reviews">Reviews</a></li>
@@ -37,56 +32,52 @@
           <span class="nav-link">👋 Welcome, {{ session['username'] }}</span>
         </li>
         <li class="nav-item">
-          <button id="logoutBtn" class="btn btn-outline-light btn-sm ms-2">Logout</button>
+          <button id="logoutBtn" class="btn btn-sm btn-outline-light ms-2">Logout</button>
         </li>
         {% else %}
         <li class="nav-item">
-          <a class="btn btn-outline-light btn-sm ms-2" href="/login">Login</a>
+          <a class="nav-link btn btn-primary ms-2" href="/login">Login</a>
         </li>
         {% endif %}
       </ul>
     </div>
   </nav>
 
-  <!-- Main Content -->
   <div class="container my-5">
-    <h1 class="text-center mb-4 fw-bold text-maroon">About Us</h1>
+    <h1 class="text-center mb-5">About Us</h1>
 
-    <div class="row align-items-center mb-5">
+    <div class="row align-items-center section mb-5">
       <div class="col-md-7">
-        <h2 class="fw-bold">Mission</h2>
+        <h2>Mission</h2>
         <p>ZULens objective is to empower students by providing a platform to share their academic experiences with AI-driven analytics. Our goal is to bridge the knowledge gap by enabling students to give transparent, structured, and unbiased reviews of their professors and courses. Through powerful NLP and Sentiment Analysis, we ensure that student feedback is organized and impactful, helping both students and instructors improve the learning experience.</p>
       </div>
       <div class="col-md-5 text-center">
-        <img src="{{ url_for('static', filename='Mission.png') }}" alt="Mission" class="img-fluid rounded shadow-sm"/>
+        <img id="missionImage" src="{{ url_for('static', filename='Mission.png') }}" alt="Mission Image" class="mission-image" onclick="changeMissionImage()">
       </div>
     </div>
 
-    <div class="mb-5">
-      <h2 class="fw-bold">Let's Help You Choose</h2>
+    <div class="section mb-5">
+      <h2>Let's Help You Choose</h2>
       <p>Your choice of professor and course can shape your academic journey. At ZULens, we provide a space where students can openly share their insights, helping future students make informed decisions while giving professors valuable feedback to refine their teaching methods.</p>
     </div>
 
-    <div class="bg-light p-4 rounded shadow-sm">
-      <h2 class="text-center mb-4 fw-bold">Why Choose ZULens?</h2>
-      <div class="row text-center g-4">
-        <div class="col-sm-6 col-md-4"><div class="feature-box">Share your experience</div></div>
-        <div class="col-sm-6 col-md-4"><div class="feature-box">Help students choose</div></div>
-        <div class="col-sm-6 col-md-4"><div class="feature-box">Transparent feedback</div></div>
-        <div class="col-sm-6 col-md-4"><div class="feature-box">Support faculty</div></div>
-        <div class="col-sm-6 col-md-4"><div class="feature-box">User-friendly UI</div></div>
-      </div>
+    <div class="why-choose mt-5">
+      <h2>Why Choose ZULens?</h2>
+      <ul>
+        <li>Share your experience with a professor and their teaching style.</li>
+        <li>Help fellow students choose the right courses and instructors.</li>
+        <li>Ensure feedback is data-driven, transparent, and unbiased.</li>
+        <li>Support faculty in enhancing their teaching based on real student input.</li>
+        <li>Access a user-friendly platform for submitting and reviewing insights.</li>
+      </ul>
     </div>
   </div>
 
-  <!-- Footer -->
-  <footer class="text-center text-light bg-maroon py-3">
-    <p class="mb-0">© 2025 ZULens - AI-Powered Reviews for Zayed University</p>
+  <footer class="text-center">
+    <p>© 2025 ZULens - AI-Powered Reviews for Zayed University</p>
   </footer>
 
-  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
-

@@ -1,51 +1,122 @@
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
   background-color: #f9f9f9;
   color: #333;
+  min-height: 100vh;
 }
 
 .bg-maroon {
   background-color: #5A002B;
 }
 
-.text-maroon {
+.logo {
+  height: 35px;
+  width: auto;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
   color: #5A002B;
+  text-align: center;
 }
 
-.logo-img {
-  width: 40px;
+.section {
+  text-align: left;
+}
+
+.section h2 {
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.section p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.mission-image {
+  max-width: 100%;
   height: auto;
+  border-radius: 10px;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease-in-out;
+  cursor: pointer;
 }
 
-.feature-box {
-  background-color: #5A002B;
-  color: white;
-  padding: 20px;
-  border-radius: 12px;
-  height: 100%;
+.mission-image:hover {
+  transform: scale(1.05);
+}
+
+.why-choose {
+  background-color: #f9f9f9;
+  padding: 40px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.why-choose h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.why-choose ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.why-choose li {
+  font-size: 1rem;
+  font-weight: bold;
+  width: 180px;
+  height: 180px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  background-color: #5A002B;
+  color: #fff;
+  padding: 20px;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Responsive tweaks */
+footer {
+  background: #5A002B;
+  color: white;
+  text-align: center;
+  padding: 15px;
+}
+
+footer a {
+  color: #AD974F;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+footer a:hover {
+  color: #FFFFFF;
+  text-decoration: underline;
+}
+
 @media (max-width: 768px) {
-  .navbar-brand span {
-    font-size: 1.2rem;
+  .section {
+    text-align: center;
   }
 
-  .logo-img {
-    width: 35px;
+  .why-choose ul {
+    flex-direction: column;
+    align-items: center;
   }
 
-  .feature-box {
-    font-size: 0.9rem;
-    padding: 15px;
-  }
-
-  h1, h2 {
+  .section h2 {
     text-align: center;
   }
 }
