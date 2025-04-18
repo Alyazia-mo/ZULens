@@ -30,16 +30,18 @@ h1 {
   gap: 40px;
   margin-bottom: 50px;
   text-align: left;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; 
 }
 
 .section-content {
-  flex: 1 1 60%;
+  flex: 1;
 }
 
+
 .mission-image {
-  width: 30%;
-  max-width: 300px;
+  width: 100%;
+  max-width: 400px;
+  height: auto;
   border-radius: 10px;
   box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
   cursor: pointer;
@@ -116,10 +118,11 @@ footer a:hover {
 }
 
 /* === Responsive === */
-@media (max-width: 768px) {
+@@media (max-width: 768px) {
   .section {
     flex-direction: column;
     text-align: center;
+    flex-wrap: wrap;
   }
 
   .section-content {
@@ -127,8 +130,9 @@ footer a:hover {
   }
 
   .mission-image {
-    width: 60%;
-    margin-top: 20px;
+    width: 80%;
+    max-width: 100%;
+    margin: 20px auto 0;
   }
 
   h1 {
