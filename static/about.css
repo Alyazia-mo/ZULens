@@ -1,67 +1,81 @@
+/* Reset & Base */
 body {
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
   padding: 0;
   background-color: #f9f9f9;
   color: #333;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
 }
 
-.bg-maroon {
-  background-color: #5A002B;
-}
-
-.logo {
-  height: 35px;
-  width: auto;
-}
-
-h1 {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #5A002B;
+/* Container */
+.container {
+  width: 80%;
+  margin: auto;
+  padding: 50px 0;
   text-align: center;
 }
 
-.section {
-  text-align: left;
+/* Headings */
+h1 {
+  font-size: 3em;
+  font-weight: bold;
+  color: #5A002B;
+  margin-bottom: 20px;
 }
 
-.section h2 {
-  font-size: 1.75rem;
+h2 {
+  font-size: 2em;
   font-weight: bold;
+  color: #333;
   margin-bottom: 10px;
 }
 
-.section p {
-  font-size: 1.1rem;
+p {
+  font-size: 1.2em;
   line-height: 1.6;
+  margin: 0;
 }
 
+/* Section Layout */
+.section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  margin-bottom: 50px;
+  text-align: left;
+  flex-wrap: wrap;
+}
+
+.section-content {
+  flex: 1 1 300px;
+  min-width: 250px;
+}
+
+/* Mission Image */
 .mission-image {
-  max-width: 100%;
-  height: auto;
+  width: 30%;
+  max-width: 300px;
   border-radius: 10px;
   box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease-in-out;
   cursor: pointer;
+  transition: transform 0.3s ease-in-out;
 }
 
 .mission-image:hover {
   transform: scale(1.05);
 }
 
+/* Why Choose Section */
 .why-choose {
   background-color: #f9f9f9;
   padding: 40px;
   border-radius: 10px;
-  text-align: center;
   box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
-}
-
-.why-choose h2 {
-  font-size: 2rem;
-  margin-bottom: 20px;
+  text-align: center;
 }
 
 .why-choose ul {
@@ -74,7 +88,7 @@ h1 {
 }
 
 .why-choose li {
-  font-size: 1rem;
+  font-size: 14px;
   font-weight: bold;
   width: 180px;
   height: 180px;
@@ -83,16 +97,19 @@ h1 {
   justify-content: center;
   border-radius: 50%;
   background-color: #5A002B;
-  color: #fff;
+  color: #f9f9f9;
   padding: 20px;
   box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
 }
 
+/* Footer */
 footer {
   background: #5A002B;
   color: white;
   text-align: center;
   padding: 15px;
+  margin-top: auto;
+  width: 100%;
 }
 
 footer a {
@@ -106,17 +123,40 @@ footer a:hover {
   text-decoration: underline;
 }
 
+/* Logo Fixes */
+.logo {
+  height: 45px;
+  width: auto;
+}
+
+/* Responsive Adjustments */
 @media (max-width: 768px) {
+  .container {
+    width: 90%;
+    padding: 30px 0;
+  }
+
   .section {
+    flex-direction: column;
     text-align: center;
   }
 
-  .why-choose ul {
-    flex-direction: column;
-    align-items: center;
+  .mission-image {
+    width: 80%;
+    margin: auto;
   }
 
-  .section h2 {
+  .why-choose li {
+    width: 140px;
+    height: 140px;
+    font-size: 13px;
+  }
+
+  .navbar-brand .logo {
+    height: 40px;
+  }
+
+  .navbar-nav .nav-link {
     text-align: center;
   }
 }
