@@ -20,22 +20,34 @@ h1 {
   font-size: 3em;
   font-weight: bold;
   color: #5A002B;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
 }
 
 .section {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 40px;
   margin-bottom: 50px;
   text-align: left;
+  flex-wrap: wrap;
 }
 
 .section-content {
-  flex: 1;
-  min-width: 250px;
+  flex: 1 1 60%;
+}
+
+.mission-image {
+  width: 30%;
+  max-width: 300px;
+  border-radius: 10px;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out;
+}
+
+.mission-image:hover {
+  transform: scale(1.05);
 }
 
 h2 {
@@ -49,20 +61,6 @@ p {
   font-size: 1.2em;
   line-height: 1.6;
   margin: 0;
-}
-
-.mission-image {
-  width: 100%;
-  max-width: 300px;
-  height: auto;
-  border-radius: 10px;
-  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  transition: transform 0.3s ease-in-out;
-}
-
-.mission-image:hover {
-  transform: scale(1.05);
 }
 
 .why-choose {
@@ -117,11 +115,20 @@ footer a:hover {
   text-decoration: underline;
 }
 
-/* ----------- RESPONSIVE DESIGN ----------- */
+/* === Responsive === */
 @media (max-width: 768px) {
-  .container {
-    padding: 30px 15px;
-    width: 90%;
+  .section {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .section-content {
+    flex: 1 1 100%;
+  }
+
+  .mission-image {
+    width: 60%;
+    margin-top: 20px;
   }
 
   h1 {
@@ -129,29 +136,10 @@ footer a:hover {
   }
 
   h2 {
-    font-size: 1.5em;
+    font-size: 1.6em;
   }
 
   p {
-    font-size: 1em;
-  }
-
-  .section {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .section-content {
-    text-align: center;
-  }
-
-  .why-choose li {
-    width: 140px;
-    height: 140px;
-    font-size: 13px;
-  }
-
-  .mission-image {
-    margin-top: 20px;
+    font-size: 1.1em;
   }
 }

@@ -9,12 +9,10 @@
 
 /* Logo styling */
 .navbar-brand img.logo {
-  height: auto;
-  max-height: 80px;
+  height: 70px;
   width: auto;
-  max-width: 150px;
-  object-fit: contain;
 }
+
 /* Navbar links */
 .navbar-nav {
   gap: 30px;
@@ -34,16 +32,16 @@
 
 /* Login button */
 .navbar-nav .btn-primary {
-  background-color: #AD974F;
-  color: #5A002B;
+  background-color: #AD974F !important;
+  color: #5A002B !important;
   font-weight: bold;
   border: none;
   border-radius: 8px;
 }
 
 .navbar-nav .btn-primary:hover {
-  background-color: #916F33;
-  color: white;
+  background-color: #916F33 !important;
+  color: white !important;
 }
 
 /* Collapsed navbar styling (dropdown on mobile) */
