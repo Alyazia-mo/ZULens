@@ -13,32 +13,25 @@
     <div class="container-fluid">
       <a class="navbar-brand d-flex align-items-center" href="/">
         <img src="{{ url_for('static', filename='ZULens-logo.png') }}" alt="ZULens Logo" class="logo me-2">
-        <span class="fw-bold fs-5 text-light">ZULens</span>
       </a>
-      <button class="navbar-toggler text-light border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+  
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
   
       <div class="collapse navbar-collapse mt-2 mt-lg-0" id="navbarNav">
-        <ul class="navbar-nav ms-auto align-items-center text-center">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
           <li class="nav-item"><a class="nav-link active" href="/about-us">About Us</a></li>
           <li class="nav-item"><a class="nav-link" href="/reviews">Reviews</a></li>
           <li class="nav-item"><a class="nav-link" href="/submit-review-page">Submit a Review</a></li>
           <li class="nav-item"><a class="nav-link" href="/contact-us">Contact Us</a></li>
           <li class="nav-item"><a class="nav-link" href="/my-reviews">My Reviews</a></li>
-  
           {% if session.get('username') %}
-          <li class="nav-item">
-            <span class="nav-link">👋 {{ session['username'] }}</span>
-          </li>
-          <li class="nav-item">
-            <button id="logoutBtn" class="btn btn-sm btn-outline-light">Logout</button>
-          </li>
+            <li class="nav-item"><span class="nav-link">👋 Welcome, {{ session['username'] }}</span></li>
+            <li class="nav-item"><button id="logoutBtn" class="btn btn-outline-warning btn-sm ms-2">Logout</button></li>
           {% else %}
-          <li class="nav-item">
-            <a class="btn btn-sm btn-outline-light" href="/login">Login</a>
-          </li>
+            <li class="nav-item"><a class="btn btn-warning btn-sm ms-2" href="/login">Login</a></li>
           {% endif %}
         </ul>
       </div>
