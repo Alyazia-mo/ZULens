@@ -1,47 +1,51 @@
 body {
-  font-family: Arial, Helvetica, sans-serif;
-  margin: 0;
-  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f9f9f9;
   color: #333;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
 }
 
-h1, h2 {
-  font-weight: bold;
-}
-
-.section-content p,
-p {
-  font-size: 1.2em;
-  line-height: 1.6;
-}
-
-.mission-image {
-  max-width: 300px;
-  border-radius: 10px;
-  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  transition: transform 0.3s ease-in-out;
-}
-
-.mission-image:hover {
-  transform: scale(1.05);
-}
-
-.why-choose-box {
-  height: 180px;
-  border-radius: 50%;
+.bg-maroon {
   background-color: #5A002B;
-  color: #f9f9f9;
-  font-weight: bold;
+}
+
+.text-maroon {
+  color: #5A002B;
+}
+
+.logo-img {
+  width: 40px;
+  height: auto;
+}
+
+.feature-box {
+  background-color: #5A002B;
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  padding: 20px;
-  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
-  font-size: 14px;
+  font-weight: bold;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .navbar-brand span {
+    font-size: 1.2rem;
+  }
+
+  .logo-img {
+    width: 35px;
+  }
+
+  .feature-box {
+    font-size: 0.9rem;
+    padding: 15px;
+  }
+
+  h1, h2 {
+    text-align: center;
+  }
 }
