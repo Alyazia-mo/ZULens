@@ -3,14 +3,15 @@
   background-color: #5A002B !important;
   padding-top: 5px;
   padding-bottom: 5px;
-  height: auto; /* remove fixed height for better responsiveness */
+  height: auto;
   overflow: visible;
 }
 
-/* Logo styling */
 .navbar-brand img.logo {
-  height: 70px;
+  height: 100px; /* Make the logo larger */
   width: auto;
+  padding: 0;
+  margin: 0;
 }
 
 /* Navbar links */
@@ -30,8 +31,10 @@
   color: #AD974F !important;
 }
 
-/* Login button */
-.navbar-nav .btn-primary {
+/* Login button fix */
+.navbar-nav .btn-primary,
+.navbar-nav .btn-warning,
+.btn-warning {
   background-color: #AD974F !important;
   color: #5A002B !important;
   font-weight: bold;
@@ -39,20 +42,14 @@
   border-radius: 8px;
 }
 
-.navbar-nav .btn-primary:hover {
+.navbar-nav .btn-warning:hover,
+.btn-warning:hover {
   background-color: #916F33 !important;
   color: white !important;
 }
 
-/* Collapsed navbar styling (dropdown on mobile) */
+/* Responsive: Navbar and logo */
 @media (max-width: 768px) {
-  .navbar-brand img.logo {
-    max-height: 60px;
-    max-width: 120px;
-  }
-}
-
-
   .navbar-nav {
     flex-direction: column;
     align-items: center;
@@ -60,5 +57,6 @@
   }
 
   .navbar-brand img.logo {
-    height: 40px;
+    height: 80px;
   }
+}
