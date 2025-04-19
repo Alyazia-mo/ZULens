@@ -6,6 +6,8 @@
     <title>ZULens - Home</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='ZUlens.css') }}">
+
 
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark bg-maroon px-3">
@@ -74,7 +76,7 @@
       <div class="col-md-4">
           <div class="card h-100 shadow-sm">
               <div class="card-body">
-                  <img src="{{ url_for('static', filename='Verified.jpg') }} alt="Verified Reviews Icon" class="mb-3" style="width: 60px;">
+                  <img src="{{ url_for('static', filename='Verified.jpg') }}" alt="Verified Reviews Icon" class="mb-3" style="width: 60px;">
                   <h5 class="card-title">Verified Reviews</h5>
                   <p class="card-text">All reviews are submitted by ZU students, ensuring trust and authenticity.</p>
               </div>
