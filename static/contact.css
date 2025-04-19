@@ -6,83 +6,101 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-}
-
-/* Contact Form Container */
-.container {
-    width: 40%;
+  }
+  
+  /* Contact Form Container */
+  .container {
+    max-width: 600px;
+    width: 90%;
     background: #fff;
-    padding: 20px;
+    padding: 30px;
+    margin: 60px auto;
     border-radius: 10px;
-    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
-    margin: auto;
-    margin-top: 50px;
-}
-
-h2 {
-    color: #5A002B; /* Maroon */
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  h2 {
+    color: #5A002B;
     text-align: center;
-}
-
-label {
-    font-weight: bold;
-    display: block;
-    margin-top: 10px;
-    font-size: 14px;
-}
-
-input, textarea {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px;
-    font-family: Arial, sans-serif;
-}
-
-.note {
-    color:  #5A002B; /* Maroon */
-    font-size: 12px;
     margin-bottom: 10px;
+  }
+  
+  .note {
+    color: #5A002B;
+    font-size: 13px;
     text-align: center;
-}
-
-button {
+    margin-bottom: 20px;
+  }
+  
+  label {
+    font-weight: bold;
+    font-size: 14px;
+    display: block;
+    margin-top: 12px;
+  }
+  
+  input,
+  textarea {
     width: 100%;
     padding: 10px;
-    background-color: #5A002B; /* Maroon */
-    color: white;
-    border: none;
-    border-radius: 5px;
     font-size: 14px;
-    margin-top: 15px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: inherit;
+  }
+  
+  textarea {
+    resize: vertical;
+  }
+  
+  button {
+    width: 100%;
+    padding: 12px;
+    background-color: #5A002B;
+    color: white;
+    font-weight: bold;
+    font-size: 15px;
+    border: none;
+    border-radius: 6px;
+    margin-top: 20px;
     cursor: pointer;
-    font-family: Arial, sans-serif;
-}
-
-button:hover {
-    background-color:  #5A002B; /* Maroon */
-}
-
-/* Footer (Sticky) */
-footer {
-    background: #5A002B; /* Maroon */
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: #AD974F;
+  }
+  
+  /* Footer */
+  footer {
+    background: #5A002B;
     color: white;
     text-align: center;
     padding: 15px;
     margin-top: auto;
     width: 100%;
-    bottom: 0;
-}
-
-footer a {
-    color: #AD974F; /* Gold */
+  }
+  
+  footer a {
+    color: #AD974F;
     text-decoration: none;
     font-weight: bold;
-}
-
-footer a:hover {
+  }
+  
+  footer a:hover {
     color: #FFFFFF;
-    text-decoration: underline;
-}
+  }
+  
+  /* Responsive Form Layout */
+  @media (max-width: 576px) {
+    .container {
+      padding: 20px;
+      margin-top: 40px;
+    }
+  
+    button {
+      font-size: 14px;
+    }
+  }
+  
