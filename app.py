@@ -12,6 +12,13 @@ CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 sia = SentimentIntensityAnalyzer()
 
+@app.before_request
+def redirect_to_www():
+    host = request.host
+    if host == "zulens.org":
+        return redirect("https://www.zulens.org" + request.path, code=301)
+
+
 # ---------- PAGE ROUTES ----------
 
 @app.route('/')
