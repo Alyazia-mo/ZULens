@@ -6,6 +6,8 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 
 nltk.download("vader_lexicon")
 
+DB_PATH = "/data/reviews.db"  # Use persistent disk path
+
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.secret_key = "your_secret_key_here"
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
@@ -17,7 +19,6 @@ def redirect_to_www():
     host = request.host
     if host == "zulens.org":
         return redirect("https://www.zulens.org" + request.path, code=301)
-
 
 # ---------- PAGE ROUTES ----------
 
@@ -59,7 +60,6 @@ def my_reviews_page():
         return redirect(url_for("login_page"))
     return render_template('my_reviews.html')
 
-
 # ---------- USER AUTH ----------
 
 @app.route("/signup-user", methods=["POST"])
@@ -71,7 +71,7 @@ def signup_user():
     if not username or not password:
         return jsonify({"error": "Missing fields"}), 400
 
-    conn = sqlite3.connect("reviews.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
     if cursor.fetchone():
@@ -89,7 +89,7 @@ def login_user():
     username = data.get("username", "").strip()
     password = data.get("password", "").strip()
 
-    conn = sqlite3.connect("reviews.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM users WHERE username = ? AND password = ?", (username, password))
     user = cursor.fetchone()
@@ -107,7 +107,6 @@ def logout_user():
     session.clear()
     return jsonify({"message": "Logged out", "redirect": "/"})
 
-
 # ---------- TONE CHECK ENDPOINT ----------
 
 @app.route("/check-tone", methods=["POST"])
@@ -121,7 +120,6 @@ def check_tone():
         warning = "⚠️ Your review seems harsh. Consider rewording to sound more constructive."
 
     return jsonify({"warning": warning})
-
 
 # ---------- REVIEWS ----------
 
@@ -154,11 +152,9 @@ def submit_review():
         sentiment = "Negative"
 
     summary = f"This course ({course}) taught by {instructor} has mostly {sentiment.lower()} feedback based on this review."
-    
-    # Smarter flagging: reviews with harsh/very negative sentiment
     flagged = compound <= -0.5
 
-    conn = sqlite3.connect("reviews.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO reviews (course, instructor, rating, review, sentiment, summary, flagged, user_id)
@@ -176,7 +172,7 @@ def submit_review():
 
 @app.route('/get-reviews', methods=['GET'])
 def get_reviews():
-    conn = sqlite3.connect("reviews.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT id, course, instructor, rating, review, sentiment, summary, flagged FROM reviews")
     rows = cursor.fetchall()
@@ -203,7 +199,7 @@ def get_my_reviews():
     if not user_id:
         return jsonify({"error": "Not logged in"}), 401
 
-    conn = sqlite3.connect("reviews.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("""
         SELECT id, course, instructor, rating, review, sentiment, summary, flagged 
@@ -230,13 +226,12 @@ def delete_review_by_id():
     user_id = session.get("user_id")
     review_id = request.json.get("review_id")
 
-    conn = sqlite3.connect("reviews.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("DELETE FROM reviews WHERE id = ? AND user_id = ?", (review_id, user_id))
     conn.commit()
     conn.close()
     return jsonify({"message": "Review deleted"}), 200
-
 
 # ---------- CHATBOT ----------
 
@@ -252,7 +247,7 @@ def chat():
         "helpful": ["helpful", "supportive", "kind", "responsive"]
     }
 
-    conn = sqlite3.connect("reviews.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     matched = False
@@ -280,11 +275,10 @@ def chat():
 
     return jsonify({"reply": response})
 
-
 # ---------- INIT DB ----------
 
 def init_db():
-    conn = sqlite3.connect("reviews.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     cursor.execute("""
