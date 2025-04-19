@@ -103,20 +103,3 @@ body {
       font-size: 14px;
     }
   }
-
-
-.navbar-brand {
-    z-index: 1029;
-  }
-  
-@media (max-width: 768px) {
-.navbar-brand img.logo {
-    height: 50px;
-    width: auto;
-    }
-  
-.navbar-toggler {
-    margin-left: auto;
-    }
-  }
-  

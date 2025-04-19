@@ -51,7 +51,7 @@
 /* Responsive: Navbar and logo */
 @media (max-width: 768px) {
   .navbar-nav {
-    flex-direction: column;
+    flex-direction: column !important;
     align-items: center;
     gap: 15px;
   }
