@@ -104,19 +104,19 @@ body {
     }
   }
 
-.navbar-toggler {
-    position: absolute;
-    right: 15px;
-    top: 15px;
-    z-index: 1001;
-  }
 
 .navbar-brand {
     z-index: 1029;
   }
   
 @media (max-width: 768px) {
-    .navbar-brand img.logo {
-      max-height: 50px;
+.navbar-brand img.logo {
+    height: 50px;
+    width: auto;
+    }
+  
+.navbar-toggler {
+    margin-left: auto;
     }
   }
+  

@@ -20,24 +20,24 @@
       </button>
   
       <div class="collapse navbar-collapse mt-2 mt-lg-0" id="navbarNav">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="/about-us">About Us</a></li>
           <li class="nav-item"><a class="nav-link" href="/reviews">Reviews</a></li>
           <li class="nav-item"><a class="nav-link" href="/submit-review-page">Submit a Review</a></li>
           <li class="nav-item"><a class="nav-link active" href="/contact-us">Contact Us</a></li>
           <li class="nav-item"><a class="nav-link" href="/my-reviews">My Reviews</a></li>
+  
           {% if session.get('username') %}
             <li class="nav-item"><span class="nav-link">👋 Welcome, {{ session['username'] }}</span></li>
-            <li class="nav-item"><button id="logoutBtn" class="btn btn-primary btn-sm ms-2">Logout</button></li>
+            <li class="nav-item"><button id="logoutBtn" class="btn btn-outline-warning btn-sm ms-2">Logout</button></li>
           {% else %}
             <li class="nav-item"><a class="btn btn-primary btn-sm ms-2" href="/login">Login</a></li>
           {% endif %}
         </ul>
       </div>
     </div>
-  </nav>
-  
+  </nav>  
   <!-- Contact Form -->
   <div class="container">
     <h2>Contact Us</h2>
