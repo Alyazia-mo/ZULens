@@ -32,7 +32,7 @@
             <span class="navbar-text me-3">Welcome, {{ session['email'].split('@')[0] }}!</span>
             <button id="logout-btn" class="btn btn-outline-light btn-sm">Logout</button>
           {% else %}
-            <a class="btn btn-light btn-sm" href="/login">Login</a>
+            <a class="btn btn-sm login-btn" href="/login">Login</a>
           {% endif %}
         </ul>
       </div>

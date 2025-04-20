@@ -75,3 +75,12 @@
     margin-right: 0 !important;
   }
 }
+
+.login-btn {
+  background-color: #AD974F;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 5px;
+  font-weight: bold;
+}

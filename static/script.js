@@ -111,15 +111,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (loginBtn) {
           loginBtn.style.display = "inline-block";
         } else {
-          // If login link doesn't exist, create and insert it
           const loginLink = document.createElement("a");
           loginLink.href = "/login";
           loginLink.textContent = "Login";
-          loginLink.style.cssText = "background-color: #AD974F; color: white; border: none;";
+          loginLink.className = "btn btn-sm ms-2 login-btn";
           document.querySelector(".navbar-nav").appendChild(loginLink);
         }
   
-        // Optionally redirect to home
         window.location.href = data.redirect;
       }
     });
