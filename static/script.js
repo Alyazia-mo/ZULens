@@ -115,7 +115,6 @@ document.addEventListener("DOMContentLoaded", function () {
           const loginLink = document.createElement("a");
           loginLink.href = "/login";
           loginLink.textContent = "Login";
-          loginLink.className = "btn btn-light btn-sm";
           loginLink.style.cssText = "background-color: #AD974F; color: white; border: none;";
           document.querySelector(".navbar-nav").appendChild(loginLink);
         }
