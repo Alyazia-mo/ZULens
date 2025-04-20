@@ -104,7 +104,7 @@ def send_confirmation_email(to_email, username):
 @app.route("/signup-user", methods=["POST"])
 def signup_user():
     data = request.json
-    email = data.get("username", "").strip().lower()
+    email = data.get("email", "").strip().lower()
     password = data.get("password", "").strip()
 
     if not email or not password:
@@ -112,11 +112,11 @@ def signup_user():
 
     conn = sqlite3.connect("reviews.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE username = ?", (email,))
+    cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
     if cursor.fetchone():
         return jsonify({"error": "Email already registered"}), 409
 
-    cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (email, password))
+    cursor.execute("INSERT INTO users (email, password) VALUES (?, ?)", (email, password))
     conn.commit()
     conn.close()
 
@@ -129,18 +129,18 @@ def signup_user():
 @app.route("/login-user", methods=["POST"])
 def login_user():
     data = request.json
-    email = data.get("username", "").strip().lower()
+    email = data.get("email", "").strip().lower()
     password = data.get("password", "").strip()
 
     conn = sqlite3.connect("reviews.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT id FROM users WHERE username = ? AND password = ?", (email, password))
+    cursor.execute("SELECT id FROM users WHERE email = ? AND password = ?", (email, password))
     user = cursor.fetchone()
     conn.close()
 
     if user:
         session["user_id"] = user[0]
-        session["username"] = email
+        session["email"] = email
         return jsonify({"message": "Login successful"}), 200
     else:
         return jsonify({"error": "Invalid credentials"}), 401
