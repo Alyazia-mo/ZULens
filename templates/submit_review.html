@@ -32,7 +32,7 @@
           <li class="nav-item"><a class="nav-link" href="/my-reviews">My Reviews</a></li>
           {% if session['user_id'] %}
             <span class="navbar-text me-3">Welcome, {{ session['email'].split('@')[0] }}!</span>
-            <button class="btn btn-outline-light btn-sm" onclick="logoutUser()">Logout</button>
+            <button id="logout-btn" class="btn btn-outline-light btn-sm">Logout</button>
           {% else %}
             <a class="btn btn-light btn-sm" href="/login">Login</a>
           {% endif %}

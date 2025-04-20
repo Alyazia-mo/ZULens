@@ -91,15 +91,22 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Logout Button
-  const logoutBtn = document.getElementById("logoutBtn");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      fetch("/logout", { method: "POST" })
-        .then(res => res.json())
-        .then(data => window.location.href = data.redirect || "/");
-    });
-  }
-
+  document.addEventListener("DOMContentLoaded", () => {
+    const logoutBtn = document.getElementById("logout-btn");
+  
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", async () => {
+        const res = await fetch("/logout", {
+          method: "POST"
+        });
+  
+        const data = await res.json();
+        if (data.redirect) {
+          window.location.href = data.redirect;
+        }
+      });
+    }
+  });
   // Chatbot
   const chatbotToggle = document.getElementById("chatbot-toggle");
   const chatbotModal = document.getElementById("chatbot-modal");
