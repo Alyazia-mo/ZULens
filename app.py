@@ -145,6 +145,10 @@ def login_user():
     else:
         return jsonify({"error": "Invalid credentials"}), 401
 
+@app.route("/logout", methods=["POST"])
+def logout_user():
+    session.clear()
+    return jsonify({"message": "Logged out", "redirect": "/"})
 
 # ---------- TONE CHECK ENDPOINT ----------
 
