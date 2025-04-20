@@ -3,6 +3,9 @@ from flask_cors import CORS
 import sqlite3, os
 import nltk
 from nltk.sentiment import SentimentIntensityAnalyzer
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 nltk.download("vader_lexicon")
 
@@ -60,52 +63,88 @@ def my_reviews_page():
         return redirect(url_for("login_page"))
     return render_template('my_reviews.html')
 
+
+# Email configuration (update with your real info)
+EMAIL_SENDER = "zulensorg@gmail.com"
+EMAIL_PASSWORD = "Almuhairi@9797" 
+EMAIL_SMTP_SERVER = "smtp.gmail.com"
+EMAIL_PORT = 587
+
 # ---------- USER AUTH ----------
+def send_confirmation_email(to_email, username):
+    subject = "Welcome to ZULens!"
+    body = f"""
+    <html>
+      <body style="font-family: Arial, sans-serif;">
+        <h2>🎉 Welcome to ZULens, {username}!</h2>
+        <p>Thank you for signing up to ZULens – your voice matters.</p>
+        <p>We’re excited to have you as part of the community!</p>
+        <br>
+        <p>Cheers,<br>ZULens Team</p>
+      </body>
+    </html>
+    """
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = EMAIL_SENDER
+    msg["To"] = to_email
+    msg.attach(MIMEText(body, "html"))
+
+    try:
+        server = smtplib.SMTP(EMAIL_SMTP_SERVER, EMAIL_PORT)
+        server.starttls()
+        server.login(EMAIL_SENDER, EMAIL_PASSWORD)
+        server.sendmail(EMAIL_SENDER, to_email, msg.as_string())
+        server.quit()
+    except Exception as e:
+        print("Email sending failed:", e)
+
 
 @app.route("/signup-user", methods=["POST"])
 def signup_user():
     data = request.json
-    username = data.get("username", "").strip()
+    email = data.get("username", "").strip().lower()
     password = data.get("password", "").strip()
 
-    if not username or not password:
+    if not email or not password:
         return jsonify({"error": "Missing fields"}), 400
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect("reviews.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+    cursor.execute("SELECT * FROM users WHERE username = ?", (email,))
     if cursor.fetchone():
-        return jsonify({"error": "Username already exists"}), 409
+        return jsonify({"error": "Email already registered"}), 409
 
-    cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+    cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (email, password))
     conn.commit()
     conn.close()
 
-    return jsonify({"message": "Account created successfully"}), 200
+    # Send confirmation email
+    send_confirmation_email(email, email.split("@")[0])
+    
+    return jsonify({"message": "Account created! Check your email to confirm."}), 200
+
 
 @app.route("/login-user", methods=["POST"])
 def login_user():
     data = request.json
-    username = data.get("username", "").strip()
+    email = data.get("username", "").strip().lower()
     password = data.get("password", "").strip()
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect("reviews.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT id FROM users WHERE username = ? AND password = ?", (username, password))
+    cursor.execute("SELECT id FROM users WHERE username = ? AND password = ?", (email, password))
     user = cursor.fetchone()
     conn.close()
 
     if user:
         session["user_id"] = user[0]
-        session["username"] = username
+        session["username"] = email
         return jsonify({"message": "Login successful"}), 200
     else:
         return jsonify({"error": "Invalid credentials"}), 401
 
-@app.route("/logout", methods=["POST"])
-def logout_user():
-    session.clear()
-    return jsonify({"message": "Logged out", "redirect": "/"})
 
 # ---------- TONE CHECK ENDPOINT ----------
 
