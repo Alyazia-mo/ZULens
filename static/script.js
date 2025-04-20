@@ -100,11 +100,31 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   
       const data = await res.json();
+  
       if (data.redirect) {
+        // Update navbar UI without reload
+        const welcomeText = document.querySelector(".navbar-text");
+        const loginBtn = document.querySelector(".btn.btn-light.btn-sm");
+        if (welcomeText) welcomeText.style.display = "none";
+        if (logoutBtn) logoutBtn.style.display = "none";
+  
+        if (loginBtn) {
+          loginBtn.style.display = "inline-block";
+        } else {
+          // If login link doesn't exist, create and insert it
+          const loginLink = document.createElement("a");
+          loginLink.href = "/login";
+          loginLink.textContent = "Login";
+          loginLink.className = "btn btn-light btn-sm";
+          document.querySelector(".navbar-nav").appendChild(loginLink);
+        }
+  
+        // Optionally redirect to home
         window.location.href = data.redirect;
       }
     });
   }
+  
   // Chatbot
   const chatbotToggle = document.getElementById("chatbot-toggle");
   const chatbotModal = document.getElementById("chatbot-modal");
