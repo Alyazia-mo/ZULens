@@ -91,22 +91,20 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Logout Button
-  document.addEventListener("DOMContentLoaded", () => {
-    const logoutBtn = document.getElementById("logout-btn");
-  
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", async () => {
-        const res = await fetch("/logout", {
-          method: "POST"
-        });
-  
-        const data = await res.json();
-        if (data.redirect) {
-          window.location.href = data.redirect;
-        }
+  const logoutBtn = document.getElementById("logout-btn");
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      const res = await fetch("/logout", {
+        method: "POST"
       });
-    }
-  });
+  
+      const data = await res.json();
+      if (data.redirect) {
+        window.location.href = data.redirect;
+      }
+    });
+  }
   // Chatbot
   const chatbotToggle = document.getElementById("chatbot-toggle");
   const chatbotModal = document.getElementById("chatbot-modal");
