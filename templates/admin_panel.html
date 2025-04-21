@@ -76,10 +76,7 @@ reviews.forEach((review) => {
           <p><strong>Summary:</strong> ${review.summary}</p>
           <p><strong>Review:</strong> "${review.review}"</p>
           ${review.flagged ? '<span class="badge bg-danger">⚠️ Flagged</span>' : ''}
-          <button class="btn btn-sm btn-warning mt-2 me-2"
-            onclick='editReview(${review.id}, \`${review.course}\`, \`${review.instructor}\`, \`${review.review}\`)'>
-             ✏️ Edit
-          </button>
+          <button class="btn btn-sm btn-warning mt-2 me-2" onclick='editReview(${JSON.stringify(review)})'>✏️ Edit</button>
           <button class="btn btn-sm btn-danger mt-2" onclick='deleteReview(${review.id})'>🗑 Delete</button>
         </div>
       </div>
@@ -110,19 +107,19 @@ async function deleteReview(reviewId) {
     loadReviews();
     let editingReviewId = null;
 
-function editReview(id, course, instructor, reviewText) {
-  editingReviewId = id;
-  document.getElementById("editCourse").value = course;
-  document.getElementById("editInstructor").value = instructor;
-  document.getElementById("editReviewInput").value = reviewText;
+function editReview(review) {
+  editingReviewId = review.id;
+  document.getElementById("editReviewInput").value = review.review;
+  document.getElementById("editCourseInput").value = review.course;
+  document.getElementById("editInstructorInput").value = review.instructor;
 
   const modal = new bootstrap.Modal(document.getElementById("editModal"));
   modal.show();
 }
 
 async function saveEditedReview() {
-  const updatedCourse = document.getElementById("editCourse").value.trim();
-  const updatedInstructor = document.getElementById("editInstructor").value.trim();
+  const updatedCourse = document.getElementById("editCourseInput").value.trim();
+  const updatedInstructor = document.getElementById("editInstructorInput").value.trim();
   const updatedText = document.getElementById("editReviewInput").value.trim();
 
   if (!updatedCourse || !updatedInstructor || !updatedText) {
@@ -162,11 +159,11 @@ async function saveEditedReview() {
       </div>
       <div class="modal-body">
         <label class="form-label">Course</label>
-        <input type="text" id="editCourse" class="form-control mb-2" />
-
+        <input id="editCourseInput" class="form-control mb-2" placeholder="Course ID">
+        
         <label class="form-label">Instructor</label>
-        <input type="text" id="editInstructor" class="form-control mb-2" />
-
+        <input id="editInstructorInput" class="form-control mb-2" placeholder="Instructor Name">
+        
         <label class="form-label">Review Text</label>
         <textarea id="editReviewInput" class="form-control" rows="4"></textarea>
       </div>
