@@ -65,6 +65,19 @@
         return;
       }
 
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("edit-btn")) {
+    const btn = e.target;
+    editingReviewId = btn.getAttribute("data-id");
+    document.getElementById("editCourseInput").value = btn.getAttribute("data-course");
+    document.getElementById("editInstructorInput").value = btn.getAttribute("data-instructor");
+    document.getElementById("editReviewInput").value = decodeURIComponent(btn.getAttribute("data-review"));
+
+    const modal = new bootstrap.Modal(document.getElementById("editModal"));
+    modal.show();
+  }
+});
+
 reviews.forEach((review) => {
   container.innerHTML += `
     <div class="col-md-6">
@@ -76,7 +89,13 @@ reviews.forEach((review) => {
           <p><strong>Summary:</strong> ${review.summary}</p>
           <p><strong>Review:</strong> "${review.review}"</p>
           ${review.flagged ? '<span class="badge bg-danger">⚠️ Flagged</span>' : ''}
-          <button class="btn btn-sm btn-warning mt-2 me-2" onclick='editReview(${JSON.stringify(review)})'>✏️ Edit</button>
+          <button class="btn btn-sm btn-warning mt-2 me-2 edit-btn"
+                  data-id="${review.id}"
+                  data-course="${review.course}"
+                  data-instructor="${review.instructor}"
+                  data-review="${encodeURIComponent(review.review)}">
+            ✏️ Edit
+          </button>
           <button class="btn btn-sm btn-danger mt-2" onclick='deleteReview(${review.id})'>🗑 Delete</button>
         </div>
       </div>
@@ -106,16 +125,6 @@ async function deleteReview(reviewId) {
 
     loadReviews();
     let editingReviewId = null;
-
-function editReview(review) {
-  editingReviewId = review.id;
-  document.getElementById("editReviewInput").value = review.review;
-  document.getElementById("editCourseInput").value = review.course;
-  document.getElementById("editInstructorInput").value = review.instructor;
-
-  const modal = new bootstrap.Modal(document.getElementById("editModal"));
-  modal.show();
-}
 
 async function saveEditedReview() {
   const updatedCourse = document.getElementById("editCourseInput").value.trim();
