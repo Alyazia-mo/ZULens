@@ -173,8 +173,9 @@ def submit_review():
         return jsonify({"error": "Unauthorized"}), 401
 
     data = request.json
-    course = data.get("course", "").strip()
-    instructor = data.get("instructor", "").strip()
+    course = data.get("course", "").replace(" ", "").upper()
+    raw_instructor = data.get("instructor", "").strip()
+    instructor = "Prof. " + " ".join([part.capitalize() for part in raw_instructor.split()])
     review = data.get("review", "").strip()
     rating = int(data.get("rating", 3))
 
@@ -276,34 +277,41 @@ def delete_review_by_id():
     conn.close()
     return jsonify({"message": "Review deleted"}), 200
 
-
 @app.route("/update-review", methods=["POST"])
 def update_review():
     data = request.json
     review_id = data.get("review_id")
     new_text = data.get("new_text", "").strip()
+    new_course = data.get("new_course", "").strip()
+    new_instructor = data.get("new_instructor", "").strip()
 
-    if not review_id or not new_text:
-        return jsonify({"error": "Missing review ID or new text"}), 400
+    if not review_id or not new_text or not new_course or not new_instructor:
+        return jsonify({"error": "Missing fields"}), 400
 
-    sentiment_score = sia.polarity_scores(new_text)
-    compound = sentiment_score["compound"]
-    sentiment = "Positive" if compound >= 0.05 else "Negative" if compound <= -0.05 else "Neutral"
-    summary = f"This review was updated. Sentiment: {sentiment.lower()}."
-    flagged = int(compound <= -0.5)
-
+    # Don't re-calculate sentiment, summary, or flagged — preserve existing values
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
+
+    # Fetch existing sentiment-related values
+    cursor.execute("SELECT sentiment, summary, flagged FROM reviews WHERE id = ?", (review_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({"error": "Review not found"}), 404
+
+    existing_sentiment, existing_summary, existing_flagged = row
+
+    # Update only the editable fields
     cursor.execute("""
         UPDATE reviews 
-        SET review = ?, sentiment = ?, summary = ?, flagged = ?
+        SET review = ?, course = ?, instructor = ?, sentiment = ?, summary = ?, flagged = ?
         WHERE id = ?
-    """, (new_text, sentiment, summary, flagged, review_id))
+    """, (new_text, new_course, new_instructor, existing_sentiment, existing_summary, existing_flagged, review_id))
+
     conn.commit()
     conn.close()
 
     return jsonify({"message": "Review updated"}), 200
-
 
 # ---------- CHATBOT ----------
 
