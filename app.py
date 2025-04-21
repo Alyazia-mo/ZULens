@@ -173,7 +173,7 @@ def submit_review():
         return jsonify({"error": "Unauthorized"}), 401
 
     data = request.json
-    course = data.get("course", "").replace(" ", "").upper()
+    course = data.get("course", "").replace(" ", "").replace("-", "").upper()
     raw_instructor = data.get("instructor", "").strip()
     instructor = "Prof. " + " ".join([part.capitalize() for part in raw_instructor.split()])
     review = data.get("review", "").strip()
