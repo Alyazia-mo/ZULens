@@ -276,6 +276,35 @@ def delete_review_by_id():
     conn.close()
     return jsonify({"message": "Review deleted"}), 200
 
+
+@app.route("/update-review", methods=["POST"])
+def update_review():
+    data = request.json
+    review_id = data.get("review_id")
+    new_text = data.get("new_text", "").strip()
+
+    if not review_id or not new_text:
+        return jsonify({"error": "Missing review ID or new text"}), 400
+
+    sentiment_score = sia.polarity_scores(new_text)
+    compound = sentiment_score["compound"]
+    sentiment = "Positive" if compound >= 0.05 else "Negative" if compound <= -0.05 else "Neutral"
+    summary = f"This review was updated. Sentiment: {sentiment.lower()}."
+    flagged = int(compound <= -0.5)
+
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE reviews 
+        SET review = ?, sentiment = ?, summary = ?, flagged = ?
+        WHERE id = ?
+    """, (new_text, sentiment, summary, flagged, review_id))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Review updated"}), 200
+
+
 # ---------- CHATBOT ----------
 
 @app.route("/chat", methods=["POST"])
