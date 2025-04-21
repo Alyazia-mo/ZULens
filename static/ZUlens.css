@@ -44,7 +44,25 @@ section h2 {
     color: #5A002B;
     font-weight: bold;
 }
-
+/* Demo Video */
+.video-wrapper {
+    position: relative;
+    padding-top: 56.25%; /* 16:9 aspect ratio */
+    border: 5px solid #5A002B;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .video-wrapper video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+  
+  
 /* Card Styles */
 .card {
     border: none;
@@ -67,6 +85,12 @@ section h2 {
     color: #444;
 }
 
+.card-body img {
+    width: 100px !important;  /* increase size */
+    height: auto;
+    margin-bottom: 15px;
+  }
+  
 /* About Section */
 #about {
     background-color: #fff;
@@ -98,35 +122,5 @@ section h2 {
 #submit-review .btn:hover {
     background-color: #3b001c;  /* deeper maroon on hover */
     color: white;
-}
-
-
-
-/* Contact Form */
-form input, form textarea {
-    border-radius: 10px;
-    border: 1px solid #ccc;
-}
-
-form button {
-    background-color: #5A002B;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 25px;
-    color: white;
-    transition: background-color 0.3s ease;
-}
-
-form button:hover {
-    background-color: #3b001c;
-}
-
-/* Footer */
-footer {
-    background-color: #5A002B;
-    color: #ffffff;
-    border-top: 3px solid #3b001c;
-    padding: 20px 0;
-    font-size: 0.95rem;
 }
 
