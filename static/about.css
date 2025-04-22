@@ -97,26 +97,6 @@ p {
   box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
 }
 
-footer {
-  background: #5A002B;
-  color: white;
-  text-align: center;
-  padding: 15px;
-  margin-top: auto;
-  width: 100%;
-}
-
-footer a {
-  color: #AD974F;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-footer a:hover {
-  color: #FFFFFF;
-}
-
-
 /* === Responsive === */
 @media (max-width: 768px) {
   .section {

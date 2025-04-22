@@ -116,3 +116,13 @@
 #chat-log strong {
   color: #5A002B;
 }
+
+footer {
+  background-color: #5A002B;
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+  font-size: 14px;
+  margin-top: 40px;
+  border-top: 2px solid #440021; /* optional depth effect */
+}
