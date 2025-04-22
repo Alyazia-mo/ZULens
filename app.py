@@ -8,6 +8,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import json
 from openai import OpenAI
+import time
+
 
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -372,6 +374,7 @@ def chat():
 
     return jsonify({"reply": response})
 
+
 @app.route("/admin/update-all-sentiments", methods=["POST"])
 def update_all_sentiments():
     conn = sqlite3.connect(DATABASE_PATH)
@@ -415,11 +418,11 @@ def update_all_sentiments():
             WHERE id = ?
         """, (sentiment, summary, review_id))
 
+        time.sleep(1.5)  # 🕓 prevent rate limit
+
     conn.commit()
     conn.close()
-
-    return jsonify({"message": "All reviews updated using GPT."}), 200
-
+    return jsonify({"message": "All reviews updated using GPT with delay."}), 200
 
 # ---------- INIT DB ----------
 
