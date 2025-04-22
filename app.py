@@ -7,9 +7,10 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import json
-import openai
+from openai import OpenAI
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 DATABASE_PATH = "/data/reviews.db"
 
 
@@ -186,43 +187,36 @@ def submit_review():
     if not course or not instructor or not review:
         return jsonify({"error": "Missing fields"}), 400
 
-    # --- GPT sentiment & summary ---
     prompt = f"""
-You're an AI assistant analyzing a student review. Return only this JSON:
-{{
-  "sentiment": "Positive" | "Neutral" | "Negative",
-  "summary": "Brief summary mentioning the course ({course}) and instructor ({instructor})"
-}}
+    Analyze the following student review and return:
+    1. The overall sentiment as Positive, Negative, or Neutral.
+    2. A short summary of the review mentioning the course and instructor name.
 
-Course ID: {course}
-Instructor: {instructor}
-Rating: {rating} / 5
-Review: {review}
-"""
+    Course ID: {course}
+    Instructor: {instructor}
+    Rating: {rating} / 5
+    Review: {review}
+
+    Respond in this JSON format:
+    {{"sentiment": "...", "summary": "..."}}
+    """
 
     try:
-        gpt_response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3
         )
-
-        response_content = gpt_response.choices[0].message["content"].strip()
-
-
-        json_start = response_content.find('{')
-        json_end = response_content.rfind('}') + 1
-        response_json = response_content[json_start:json_end]
-
-        sentiment_data = json.loads(response_json)
-        sentiment = sentiment_data.get("sentiment", "Neutral")
-        summary = sentiment_data.get("summary", "Summary unavailable.")
+        content = response.choices[0].message.content.strip()
+        sentiment_data = json.loads(content)
+        sentiment = sentiment_data["sentiment"]
+        summary = sentiment_data["summary"]
     except Exception as e:
         print("GPT error:", e)
         sentiment = "Neutral"
-        summary = "Summary unavailable due to formatting error."
+        summary = "Summary unavailable due to error."
 
-    flagged = 0 
+    flagged = 1 if sentiment.lower() == "negative" and rating <= 2 else 0
 
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
@@ -378,66 +372,53 @@ def chat():
 
     return jsonify({"reply": response})
 
-
 @app.route("/admin/update-all-sentiments", methods=["POST"])
 def update_all_sentiments():
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
-
     cursor.execute("SELECT id, course, instructor, rating, review FROM reviews")
     rows = cursor.fetchall()
 
     for row in rows:
         review_id, course, instructor, rating, review = row
-
         prompt = f"""
-You're an AI assistant analyzing a student review.
+        Analyze the following student review and return:
+        1. The overall sentiment as Positive, Negative, or Neutral.
+        2. A short summary of the review mentioning the course and instructor name.
 
-Return ONLY this JSON object (no explanation):
-{{
-  "sentiment": "Positive" | "Neutral" | "Negative",
-  "summary": "Brief summary mentioning the course ({course}) and instructor ({instructor})"
-}}
+        Course ID: {course}
+        Instructor: {instructor}
+        Rating: {rating} / 5
+        Review: {review}
 
-Course ID: {course}
-Instructor: {instructor}
-Rating: {rating} / 5
-Review: {review}
-"""
+        Respond in this JSON format:
+        {{"sentiment": "...", "summary": "..."}}
+        """
 
         try:
-            gpt_response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.3
             )
-            response_content = gpt_response.choices[0].message["content"].strip()
-
-            # Extract JSON part only (in case GPT adds extras)
-            json_start = response_content.find('{')
-            json_end = response_content.rfind('}') + 1
-            json_str = response_content[json_start:json_end]
-
-            sentiment_data = json.loads(json_str)
+            content = response.choices[0].message.content.strip()
+            sentiment_data = json.loads(content)
             sentiment = sentiment_data.get("sentiment", "Neutral")
             summary = sentiment_data.get("summary", "Summary unavailable.")
-
         except Exception as e:
             print(f"GPT error on review {review_id}: {e}")
             sentiment = "Neutral"
             summary = "Summary unavailable due to error."
 
-        # Update only sentiment and summary
         cursor.execute("""
-            UPDATE reviews
-            SET sentiment = ?, summary = ?
+            UPDATE reviews SET sentiment = ?, summary = ?
             WHERE id = ?
         """, (sentiment, summary, review_id))
 
     conn.commit()
     conn.close()
 
-    return jsonify({"message": "✅ All reviews updated using GPT sentiment + summary"}), 200
+    return jsonify({"message": "All reviews updated using GPT."}), 200
 
 
 # ---------- INIT DB ----------
