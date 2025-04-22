@@ -6,6 +6,10 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import json
+import openai
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
 DATABASE_PATH = "/data/reviews.db"
 
 
@@ -182,32 +186,43 @@ def submit_review():
     if not course or not instructor or not review:
         return jsonify({"error": "Missing fields"}), 400
 
-    sentiment_score = sia.polarity_scores(review)
-    compound = sentiment_score["compound"]
+    # --- GPT sentiment & summary ---
+    prompt = f"""Analyze the following student review and return:
+1. The overall sentiment as Positive, Negative, or Neutral.
+2. A short summary of the review mentioning the course and instructor name.
 
-    if compound >= 0.05:
-        sentiment = "Positive"
-    elif compound <= -0.05:
-        sentiment = "Negative"
-    else:
-        if rating >= 4:
-            sentiment = "Positive"
-        elif rating <= 2:
-            sentiment = "Negative"
-        else:
-            sentiment = "Neutral"
+Course ID: {course}
+Instructor: {instructor}
+Rating: {rating} / 5
+Review: {review}
 
+Respond in this JSON format:
+{{"sentiment": "...", "summary": "..."}}
+"""
 
+    try:
+        gpt_response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3
+        )
 
-    summary = f"This course ({course}) taught by {instructor} has mostly {sentiment.lower()} feedback based on this review."
-    flagged = compound <= -0.5
+        response_content = gpt_response.choices[0].message["content"]
+        sentiment_data = json.loads(response_content)
+        sentiment = sentiment_data["sentiment"]
+        summary = sentiment_data["summary"]
+    except Exception as e:
+        sentiment = "Neutral"
+        summary = "Summary unavailable due to formatting error."
+
+    flagged = 1 if sentiment.lower() == "negative" and rating <= 2 else 0
 
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO reviews (course, instructor, rating, review, sentiment, summary, flagged, user_id)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (course, instructor, rating, review, sentiment, summary, int(flagged), user_id))
+    """, (course, instructor, rating, review, sentiment, summary, flagged, user_id))
     conn.commit()
     conn.close()
 
@@ -215,7 +230,7 @@ def submit_review():
         "message": "Review submitted successfully",
         "sentiment": sentiment,
         "summary": summary,
-        "flagged": flagged
+        "flagged": bool(flagged)
     })
 
 @app.route('/get-reviews', methods=['GET'])
@@ -356,42 +371,60 @@ def chat():
 
     return jsonify({"reply": response})
 
+
 @app.route("/admin/update-all-sentiments", methods=["POST"])
 def update_all_sentiments():
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, review, rating FROM reviews")
-    reviews = cursor.fetchall()
 
-    for review in reviews:
-        review_id, text, rating = review
-        sentiment_score = sia.polarity_scores(text)
-        compound = sentiment_score["compound"]
+    cursor.execute("SELECT id, course, instructor, rating, review FROM reviews")
+    rows = cursor.fetchall()
 
-        if compound >= 0.05:
-            sentiment = "Positive"
-        elif compound <= -0.05:
-            sentiment = "Negative"
-        else:
-            if rating >= 4:
-                sentiment = "Positive"
-            elif rating <= 2:
-                sentiment = "Negative"
-            else:
-                sentiment = "Neutral"
+    for row in rows:
+        review_id, course, instructor, rating, review = row
 
-        summary = f"This course has mostly {sentiment.lower()} feedback based on this review."
-        flagged = int(compound <= -0.5)
+        prompt = f"""
+        Analyze the following student review and return:
+        1. The overall sentiment as Positive, Negative, or Neutral.
+        2. A short summary of the review mentioning the course and instructor name.
 
+        Course ID: {course}
+        Instructor: {instructor}
+        Rating: {rating} / 5
+        Review: {review}
+
+        Respond in this JSON format:
+        {{"sentiment": "...", "summary": "..."}}
+        """
+
+        try:
+            gpt_response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.3
+            )
+            response_content = gpt_response.choices[0].message["content"]
+
+            sentiment_data = json.loads(response_content)
+            sentiment = sentiment_data.get("sentiment", "Neutral")
+            summary = sentiment_data.get("summary", "Summary unavailable.")
+        except Exception as e:
+            print(f"GPT error on review {review_id}: {e}")
+            sentiment = "Neutral"
+            summary = "Summary unavailable due to error."
+
+        # Update sentiment and summary only
         cursor.execute("""
             UPDATE reviews
-            SET sentiment = ?, summary = ?, flagged = ?
+            SET sentiment = ?, summary = ?
             WHERE id = ?
-        """, (sentiment, summary, flagged, review_id))
+        """, (sentiment, summary, review_id))
 
     conn.commit()
     conn.close()
-    return jsonify({"message": "All sentiments updated"}), 200
+
+    return jsonify({"message": "All reviews updated using GPT. (Flagged status unchanged)"}), 200
+
 
 
 # ---------- INIT DB ----------
