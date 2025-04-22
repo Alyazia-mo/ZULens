@@ -8,7 +8,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import json
 from openai import OpenAI
-import time
+
 
 
 
@@ -332,6 +332,31 @@ def update_review():
 
     return jsonify({"message": "Review updated"}), 200
 
+@app.route("/review-stats")
+def review_stats():
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM reviews")
+    total = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM reviews WHERE sentiment = 'Positive'")
+    positive = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM reviews WHERE sentiment = 'Negative'")
+    negative = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM reviews WHERE sentiment = 'Neutral'")
+    neutral = cursor.fetchone()[0]
+
+    conn.close()
+    return jsonify({
+        "total": total,
+        "positive": positive,
+        "negative": negative,
+        "neutral": neutral
+    })
+
+
 # ---------- CHATBOT ----------
 
 @app.route("/chat", methods=["POST"])
@@ -373,71 +398,6 @@ def chat():
         response = "Try asking about project-based, exam-heavy, or flexible courses! 😊"
 
     return jsonify({"reply": response})
-
-@app.route("/admin/update-all-sentiments", methods=["POST"])
-def update_all_sentiments():
-    limit = int(request.args.get("limit", 5))
-
-    conn = sqlite3.connect(DATABASE_PATH)
-    cursor = conn.cursor()
-
-    # ✅ Only get reviews that are not yet updated
-    cursor.execute("""
-        SELECT id, course, instructor, rating, review 
-        FROM reviews 
-        WHERE summary IS NULL OR summary LIKE 'Summary unavailable%'
-        LIMIT ?
-    """, (limit,))
-    rows = cursor.fetchall()
-
-    updated_count = 0
-
-    for row in rows:
-        review_id, course, instructor, rating, review = row
-        prompt = f"""
-        Analyze the following student review and return:
-        1. The overall sentiment as Positive, Negative, or Neutral.
-        2. A short summary of the review mentioning the course and instructor name.
-
-        Course ID: {course}
-        Instructor: {instructor}
-        Rating: {rating} / 5
-        Review: {review}
-
-        Respond in this JSON format:
-        {{"sentiment": "...", "summary": "..."}}
-        """
-
-        try:
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.3
-            )
-            content = response.choices[0].message.content.strip()
-            sentiment_data = json.loads(content)
-            sentiment = sentiment_data.get("sentiment", "Neutral")
-            summary = sentiment_data.get("summary", "Summary unavailable.")
-        except Exception as e:
-            print(f"GPT error on review {review_id}: {e}")
-            sentiment = "Neutral"
-            summary = "Summary unavailable due to error."
-
-        cursor.execute("""
-            UPDATE reviews SET sentiment = ?, summary = ?
-            WHERE id = ?
-        """, (sentiment, summary, review_id))
-
-        updated_count += 1
-        time.sleep(1.5)  # spacing to avoid hitting GPT rate limits
-
-    conn.commit()
-    conn.close()
-
-    return jsonify({
-        "message": f"✅ Updated {updated_count} reviews using GPT.",
-        "done": updated_count == 0
-    })
 
 # ---------- INIT DB ----------
 

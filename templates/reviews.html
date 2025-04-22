@@ -57,6 +57,8 @@
         </select>
       </div>
     </div>
+    
+    <div id="review-stats"></div>
 
     <div id="grouped-reviews"></div>
   </div>
@@ -76,6 +78,20 @@
       allReviews = data;
       populateCourseFilter();
       renderGroupedReviews();
+    }
+
+    async function fetchReviewStats() {
+      const res = await fetch("/review-stats");
+      const stats = await res.json();
+
+      document.getElementById("review-stats").innerHTML = `
+        <div class="alert alert-light shadow-sm mt-3">
+          <strong>Total Reviews:</strong> ${stats.total} |
+          <span class="text-success"><strong>Positive:</strong> ${stats.positive}</span> |
+          <span class="text-secondary"><strong>Neutral:</strong> ${stats.neutral}</span> |
+          <span class="text-danger"><strong>Negative:</strong> ${stats.negative}</span>
+        </div>
+      `;
     }
 
     function populateCourseFilter() {
@@ -155,7 +171,12 @@
     document.getElementById("courseFilter").addEventListener("change", renderGroupedReviews);
     document.getElementById("sentimentFilter").addEventListener("change", renderGroupedReviews);
 
-    window.onload = fetchReviews;
+
+    window.onload = () => {
+      fetchReviews();
+      fetchReviewStats(); 
+    };
+
   </script>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
