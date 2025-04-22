@@ -84,3 +84,35 @@
   border-radius: 5px;
   font-weight: bold;
 }
+
+/* chatbot styling */
+
+.bg-maroon {
+  background-color: #5A002B !important;
+}
+
+.btn-maroon {
+  background-color: #5A002B;
+  color: white;
+  border: none;
+}
+
+.btn-maroon:hover {
+  background-color: #75003c;
+}
+
+#chatbot-modal .modal-header {
+  padding: 10px 15px;
+}
+
+#chatbot-modal .modal-body {
+  background-color: #f8f9fa;
+}
+
+#chat-log p {
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+#chat-log strong {
+  color: #5A002B;
+}

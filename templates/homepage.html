@@ -107,26 +107,26 @@
     <footer class="text-center p-3 mt-4" style="background-color: #5A002B; color: white;">
         <p>© 2025 ZULens - AI-Powered Reviews for Zayed University</p>
     </footer>
-<!-- Chatbot Button -->
-<button id="chatbot-toggle" class="btn btn-primary" style="position: fixed; bottom: 20px; right: 20px; z-index: 999;">
-  💬 Ask ZULens Bot
-</button>
 
-<!-- Chatbot Modal -->
-<div id="chatbot-modal" class="modal" style="display: none; position: fixed; top: 15%; left: 50%; transform: translateX(-50%); z-index: 1000;">
-  <div class="modal-dialog">
-    <div class="modal-content shadow-lg">
-      <div class="modal-header bg-maroon text-white">
-        <h5 class="modal-title">ZULens AI Assistant</h5>
-        <button type="button" class="btn-close" id="close-chatbot"></button>
+  <!-- Chatbot Button -->
+  <button id="chatbot-toggle" class="btn btn-maroon rounded-pill px-4 py-2" style="position: fixed; bottom: 20px; right: 20px; z-index: 999;">
+    💬 Ask ZULens Bot
+  </button>
+
+  <!-- Chatbot Modal -->
+  <div id="chatbot-modal" style="display: none; position: fixed; top: 15%; left: 50%; transform: translateX(-50%); z-index: 1000; width: 90%; max-width: 400px;">
+    <div class="modal-dialog modal-content shadow" style="border-radius: 15px; overflow: hidden;">
+      <div class="modal-header bg-maroon text-white d-flex justify-content-between align-items-center">
+        <h5 class="modal-title mb-0">🤖 ZULens AI Bot</h5>
+        <button type="button" class="btn-close btn-close-white" id="close-chatbot"></button>
       </div>
-      <div class="modal-body">
-        <div id="chat-log" style="height: 250px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #ccc;"></div>
-        <input type="text" id="chat-input" class="form-control mt-3" placeholder="Ask about a course or instructor...">
+      <div class="modal-body p-3 bg-light" style="max-height: 400px; overflow-y: auto;">
+        <div id="chat-log" class="mb-3" style="font-size: 0.9rem; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #ddd; height: 250px; overflow-y: auto;"></div>
+        <input type="text" id="chat-input" class="form-control border-secondary" placeholder="Ask about a course or instructor...">
       </div>
     </div>
   </div>
-</div>
+
 
     <!-- External JS -->
     <script src="{{ url_for('static', filename='script.js') }}"></script>

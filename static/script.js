@@ -132,7 +132,15 @@ document.addEventListener("DOMContentLoaded", function () {
   if (chatbotToggle && chatbotModal && closeChatbot) {
     chatbotToggle.addEventListener("click", () => {
       chatbotModal.style.display = "block";
+    
+      const log = document.getElementById("chat-log");
+      if (!log.innerHTML.includes("ZULens Bot:</strong> Hi 👋")) {
+        log.innerHTML += `<p><strong>ZULens Bot:</strong> Hi 👋 I'm here to help you explore courses and professors. Ask me anything!</p>`;
+      }
+    
+      setTimeout(() => chatInput.focus(), 200);
     });
+    
 
     closeChatbot.addEventListener("click", () => {
       chatbotModal.style.display = "none";

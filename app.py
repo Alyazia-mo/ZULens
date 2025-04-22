@@ -358,46 +358,57 @@ def review_stats():
 
 
 # ---------- CHATBOT ----------
-
 @app.route("/chat", methods=["POST"])
 def chat():
-    user_message = request.json.get("message", "").lower()
-    keywords = {
-        "project": ["project", "project-based", "no exam", "final project"],
-        "exam": ["exam", "midterm", "test", "quiz", "exam-heavy"],
-        "flexible": ["flexible", "easy deadline", "no attendance", "lenient"],
-        "strict": ["strict", "tough", "hard grader", "mandatory attendance"],
-        "group": ["group", "group work", "team project", "collaborative"],
-        "helpful": ["helpful", "supportive", "kind", "responsive"]
-    }
+    user_message = request.json.get("message", "").strip().lower()
 
+    # Fetch reviews
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
-
-    matched = False
-    response = ""
-
-    for category, terms in keywords.items():
-        for term in terms:
-            if term in user_message:
-                matched = True
-                cursor.execute("""
-                    SELECT course, instructor, rating FROM reviews
-                    WHERE review LIKE ? AND sentiment = 'Positive'
-                    ORDER BY rating DESC LIMIT 3
-                """, (f"%{term}%",))
-                results = cursor.fetchall()
-                if results:
-                    response += f"<b>{category.title()}-related suggestions:</b>\n"
-                    for course, instructor, rating in results:
-                        response += f"• {course} (Instructor: {instructor}, Rating: {rating}/5)\n"
-                break
-
+    cursor.execute("SELECT course, instructor, rating, sentiment, review FROM reviews")
+    rows = cursor.fetchall()
     conn.close()
-    if not matched or response == "":
-        response = "Try asking about project-based, exam-heavy, or flexible courses! 😊"
 
-    return jsonify({"reply": response})
+    if not rows:
+        return jsonify({"reply": "Sorry, no reviews available yet."})
+
+    
+    review_data = [
+        f"Course: {row[0]}, Instructor: {row[1]}, Rating: {row[2]}/5, Sentiment: {row[3]}, Review: {row[4]}"
+        for row in rows
+    ]
+    joined_data = "\n".join(review_data)
+
+    # Sending GPT a prompt of what is needed
+    prompt = f"""
+You are a helpful university course advisor for ZULens.
+
+Student asked: "{user_message}"
+
+You have access to the following reviews:
+{joined_data}
+
+Based on this data:
+- Understand that course prefixes like "CHE" mean Chemistry, "MTH" is Math, "SEC" is Security, etc.
+- Recommend or explain courses/instructors that match what the student asked (like "easy chemistry course", "strict professor", etc.).
+- Reference real review info when possible.
+- Respond conversationally, as if you’re helping a peer.
+
+Return only a helpful reply — no JSON formatting.
+"""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.5
+        )
+        reply = response.choices[0].message.content.strip()
+    except Exception as e:
+        print("Chatbot error:", e)
+        reply = "Something went wrong while trying to help. Please try again later."
+
+    return jsonify({"reply": reply})
 
 # ---------- INIT DB ----------
 
