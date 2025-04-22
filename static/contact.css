@@ -71,7 +71,27 @@ body {
   button:hover {
     background-color: #AD974F;
   }
-
+  
+  /* Footer */
+  footer {
+    background: #5A002B;
+    color: white;
+    text-align: center;
+    padding: 15px;
+    margin-top: auto;
+    width: 100%;
+  }
+  
+  footer a {
+    color: #AD974F;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
+  footer a:hover {
+    color: #FFFFFF;
+  }
+  
   /* Responsive Form Layout */
   @media (max-width: 576px) {
     .container {
