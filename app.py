@@ -187,17 +187,17 @@ def submit_review():
         return jsonify({"error": "Missing fields"}), 400
 
     # --- GPT sentiment & summary ---
-    prompt = f"""Analyze the following student review and return:
-1. The overall sentiment as Positive, Negative, or Neutral.
-2. A short summary of the review mentioning the course and instructor name.
+    prompt = f"""
+You're an AI assistant analyzing a student review. Return only this JSON:
+{{
+  "sentiment": "Positive" | "Neutral" | "Negative",
+  "summary": "Brief summary mentioning the course ({course}) and instructor ({instructor})"
+}}
 
 Course ID: {course}
 Instructor: {instructor}
 Rating: {rating} / 5
 Review: {review}
-
-Respond in this JSON format:
-{{"sentiment": "...", "summary": "..."}}
 """
 
     try:
@@ -207,15 +207,22 @@ Respond in this JSON format:
             temperature=0.3
         )
 
-        response_content = gpt_response.choices[0].message["content"]
-        sentiment_data = json.loads(response_content)
-        sentiment = sentiment_data["sentiment"]
-        summary = sentiment_data["summary"]
+        response_content = gpt_response.choices[0].message["content"].strip()
+
+
+        json_start = response_content.find('{')
+        json_end = response_content.rfind('}') + 1
+        response_json = response_content[json_start:json_end]
+
+        sentiment_data = json.loads(response_json)
+        sentiment = sentiment_data.get("sentiment", "Neutral")
+        summary = sentiment_data.get("summary", "Summary unavailable.")
     except Exception as e:
+        print("GPT error:", e)
         sentiment = "Neutral"
         summary = "Summary unavailable due to formatting error."
 
-    flagged = 1 if sentiment.lower() == "negative" and rating <= 2 else 0
+    flagged = 0 
 
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
@@ -384,18 +391,19 @@ def update_all_sentiments():
         review_id, course, instructor, rating, review = row
 
         prompt = f"""
-        Analyze the following student review and return:
-        1. The overall sentiment as Positive, Negative, or Neutral.
-        2. A short summary of the review mentioning the course and instructor name.
+You're an AI assistant analyzing a student review.
 
-        Course ID: {course}
-        Instructor: {instructor}
-        Rating: {rating} / 5
-        Review: {review}
+Return ONLY this JSON object (no explanation):
+{{
+  "sentiment": "Positive" | "Neutral" | "Negative",
+  "summary": "Brief summary mentioning the course ({course}) and instructor ({instructor})"
+}}
 
-        Respond in this JSON format:
-        {{"sentiment": "...", "summary": "..."}}
-        """
+Course ID: {course}
+Instructor: {instructor}
+Rating: {rating} / 5
+Review: {review}
+"""
 
         try:
             gpt_response = openai.ChatCompletion.create(
@@ -403,17 +411,23 @@ def update_all_sentiments():
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.3
             )
-            response_content = gpt_response.choices[0].message["content"]
+            response_content = gpt_response.choices[0].message["content"].strip()
 
-            sentiment_data = json.loads(response_content)
+            # Extract JSON part only (in case GPT adds extras)
+            json_start = response_content.find('{')
+            json_end = response_content.rfind('}') + 1
+            json_str = response_content[json_start:json_end]
+
+            sentiment_data = json.loads(json_str)
             sentiment = sentiment_data.get("sentiment", "Neutral")
             summary = sentiment_data.get("summary", "Summary unavailable.")
+
         except Exception as e:
             print(f"GPT error on review {review_id}: {e}")
             sentiment = "Neutral"
             summary = "Summary unavailable due to error."
 
-        # Update sentiment and summary only
+        # Update only sentiment and summary
         cursor.execute("""
             UPDATE reviews
             SET sentiment = ?, summary = ?
@@ -423,8 +437,7 @@ def update_all_sentiments():
     conn.commit()
     conn.close()
 
-    return jsonify({"message": "All reviews updated using GPT. (Flagged status unchanged)"}), 200
-
+    return jsonify({"message": "✅ All reviews updated using GPT sentiment + summary"}), 200
 
 
 # ---------- INIT DB ----------
