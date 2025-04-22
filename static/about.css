@@ -114,8 +114,8 @@ footer a {
 
 footer a:hover {
   color: #FFFFFF;
-  text-decoration: underline;
 }
+
 
 /* === Responsive === */
 @media (max-width: 768px) {
