@@ -184,16 +184,20 @@ def submit_review():
 
     sentiment_score = sia.polarity_scores(review)
     compound = sentiment_score["compound"]
-    sentiment = "Neutral"
 
-    if rating >= 4 and compound < 0.05:
-        sentiment = "Positive"
-    elif rating <= 2 and compound > -0.05:
-        sentiment = "Negative"
-    elif compound >= 0.05:
+    if compound >= 0.05:
         sentiment = "Positive"
     elif compound <= -0.05:
         sentiment = "Negative"
+    else:
+        if rating >= 4:
+            sentiment = "Positive"
+        elif rating <= 2:
+            sentiment = "Negative"
+        else:
+            sentiment = "Neutral"
+
+
 
     summary = f"This course ({course}) taught by {instructor} has mostly {sentiment.lower()} feedback based on this review."
     flagged = compound <= -0.5
@@ -351,6 +355,44 @@ def chat():
         response = "Try asking about project-based, exam-heavy, or flexible courses! 😊"
 
     return jsonify({"reply": response})
+
+@app.route("/admin/update-all-sentiments", methods=["POST"])
+def update_all_sentiments():
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, review, rating FROM reviews")
+    reviews = cursor.fetchall()
+
+    for review in reviews:
+        review_id, text, rating = review
+        sentiment_score = sia.polarity_scores(text)
+        compound = sentiment_score["compound"]
+
+        if compound >= 0.05:
+            sentiment = "Positive"
+        elif compound <= -0.05:
+            sentiment = "Negative"
+        else:
+            if rating >= 4:
+                sentiment = "Positive"
+            elif rating <= 2:
+                sentiment = "Negative"
+            else:
+                sentiment = "Neutral"
+
+        summary = f"This course has mostly {sentiment.lower()} feedback based on this review."
+        flagged = int(compound <= -0.5)
+
+        cursor.execute("""
+            UPDATE reviews
+            SET sentiment = ?, summary = ?, flagged = ?
+            WHERE id = ?
+        """, (sentiment, summary, flagged, review_id))
+
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "All sentiments updated"}), 200
+
 
 # ---------- INIT DB ----------
 
