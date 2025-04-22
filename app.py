@@ -398,27 +398,34 @@ def update_all_sentiments():
         {{"sentiment": "...", "summary": "..."}}
         """
 
-        try:
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.3
-            )
-            content = response.choices[0].message.content.strip()
-            sentiment_data = json.loads(content)
-            sentiment = sentiment_data.get("sentiment", "Neutral")
-            summary = sentiment_data.get("summary", "Summary unavailable.")
-        except Exception as e:
-            print(f"GPT error on review {review_id}: {e}")
-            sentiment = "Neutral"
-            summary = "Summary unavailable due to error."
+        max_attempts = 5
+        for attempt in range(max_attempts):
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.3
+                )
+                content = response.choices[0].message.content.strip()
+                sentiment_data = json.loads(content)
+                sentiment = sentiment_data.get("sentiment", "Neutral")
+                summary = sentiment_data.get("summary", "Summary unavailable.")
+                break  # Success
+            except openai.RateLimitError:
+                print(f"Rate limit hit on review {review_id}. Retrying...")
+                time.sleep(5)  # Wait longer
+            except Exception as e:
+                print(f"GPT error on review {review_id}: {e}")
+                sentiment = "Neutral"
+                summary = "Summary unavailable due to error."
+                break  # Fail gracefully
 
+        # DB update (unchanged)
         cursor.execute("""
-            UPDATE reviews SET sentiment = ?, summary = ?
-            WHERE id = ?
+            UPDATE reviews SET sentiment = ?, summary = ? WHERE id = ?
         """, (sentiment, summary, review_id))
 
-        time.sleep(1.5)  # 🕓 prevent rate limit
+        time.sleep(1.5)
 
     conn.commit()
     conn.close()
