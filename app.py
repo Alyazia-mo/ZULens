@@ -288,11 +288,9 @@ def update_review():
     if not review_id or not new_text or not new_course or not new_instructor:
         return jsonify({"error": "Missing fields"}), 400
 
-    # Don't re-calculate sentiment, summary, or flagged — preserve existing values
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
 
-    # Fetch existing sentiment-related values
     cursor.execute("SELECT sentiment, summary, flagged FROM reviews WHERE id = ?", (review_id,))
     row = cursor.fetchone()
     if not row:
@@ -301,7 +299,6 @@ def update_review():
 
     existing_sentiment, existing_summary, existing_flagged = row
 
-    # Update only the editable fields
     cursor.execute("""
         UPDATE reviews 
         SET review = ?, course = ?, instructor = ?, sentiment = ?, summary = ?, flagged = ?

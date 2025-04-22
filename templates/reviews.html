@@ -79,12 +79,16 @@
     }
 
     function populateCourseFilter() {
-      const courseSet = new Set(allReviews.map(r => r.course));
+      const prefixSet = new Set(allReviews.map(r => r.course.slice(0, 3).toUpperCase()));
       const courseFilter = document.getElementById("courseFilter");
-      courseSet.forEach(course => {
+      courseFilter.innerHTML = `<option value="">All Courses</option>`; // Reset and add "All"
+
+      // Convert Set to Array, sort it alphabetically, then populate dropdown
+      const sortedPrefixes = [...prefixSet].sort();
+      sortedPrefixes.forEach(prefix => {
         const option = document.createElement("option");
-        option.value = course;
-        option.textContent = course;
+        option.value = prefix;
+        option.textContent = prefix;
         courseFilter.appendChild(option);
       });
     }
@@ -100,7 +104,7 @@
 
       allReviews.forEach(r => {
         const matchesSearch = r.instructor.toLowerCase().includes(search) || r.course.toLowerCase().includes(search);
-        const matchesCourse = !selectedCourse || r.course === selectedCourse;
+        const matchesCourse = !selectedCourse || r.course.toUpperCase().startsWith(selectedCourse);
         const matchesSentiment = !selectedSentiment || r.sentiment === selectedSentiment;
 
         if (matchesSearch && matchesCourse && matchesSentiment) {
