@@ -377,9 +377,11 @@ def chat():
 
 @app.route("/admin/update-all-sentiments", methods=["POST"])
 def update_all_sentiments():
+    limit = int(request.args.get("limit", 5)) 
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, course, instructor, rating, review FROM reviews")
+    cursor.execute("SELECT id, course, instructor, rating, review FROM reviews LIMIT ?", (limit,))
     rows = cursor.fetchall()
 
     for row in rows:
