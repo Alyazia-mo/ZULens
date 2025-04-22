@@ -374,15 +374,23 @@ def chat():
 
     return jsonify({"reply": response})
 
-
 @app.route("/admin/update-all-sentiments", methods=["POST"])
 def update_all_sentiments():
-    limit = int(request.args.get("limit", 5)) 
+    limit = int(request.args.get("limit", 5))
 
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, course, instructor, rating, review FROM reviews LIMIT ?", (limit,))
+
+    # ✅ Only get reviews that are not yet updated
+    cursor.execute("""
+        SELECT id, course, instructor, rating, review 
+        FROM reviews 
+        WHERE summary IS NULL OR summary LIKE 'Summary unavailable%'
+        LIMIT ?
+    """, (limit,))
     rows = cursor.fetchall()
+
+    updated_count = 0
 
     for row in rows:
         review_id, course, instructor, rating, review = row
@@ -400,38 +408,36 @@ def update_all_sentiments():
         {{"sentiment": "...", "summary": "..."}}
         """
 
-        max_attempts = 5
-        for attempt in range(max_attempts):
-            try:
-                response = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0.3
-                )
-                content = response.choices[0].message.content.strip()
-                sentiment_data = json.loads(content)
-                sentiment = sentiment_data.get("sentiment", "Neutral")
-                summary = sentiment_data.get("summary", "Summary unavailable.")
-                break  # Success
-            except openai.RateLimitError:
-                print(f"Rate limit hit on review {review_id}. Retrying...")
-                time.sleep(5)  # Wait longer
-            except Exception as e:
-                print(f"GPT error on review {review_id}: {e}")
-                sentiment = "Neutral"
-                summary = "Summary unavailable due to error."
-                break  # Fail gracefully
+        try:
+            response = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.3
+            )
+            content = response.choices[0].message.content.strip()
+            sentiment_data = json.loads(content)
+            sentiment = sentiment_data.get("sentiment", "Neutral")
+            summary = sentiment_data.get("summary", "Summary unavailable.")
+        except Exception as e:
+            print(f"GPT error on review {review_id}: {e}")
+            sentiment = "Neutral"
+            summary = "Summary unavailable due to error."
 
-        # DB update (unchanged)
         cursor.execute("""
-            UPDATE reviews SET sentiment = ?, summary = ? WHERE id = ?
+            UPDATE reviews SET sentiment = ?, summary = ?
+            WHERE id = ?
         """, (sentiment, summary, review_id))
 
-        time.sleep(1.5)
+        updated_count += 1
+        time.sleep(1.5)  # spacing to avoid hitting GPT rate limits
 
     conn.commit()
     conn.close()
-    return jsonify({"message": "All reviews updated using GPT with delay."}), 200
+
+    return jsonify({
+        "message": f"✅ Updated {updated_count} reviews using GPT.",
+        "done": updated_count == 0
+    })
 
 # ---------- INIT DB ----------
 
